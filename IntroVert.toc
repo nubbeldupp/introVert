@@ -9,6 +9,7 @@ Core/Defaults.lua
 Core/Lists.lua
 Core/Core.lua
 Core/Options.lua
+Core/Window.lua
 
 Modules/Quiet/Profile.lua
 Modules/Quiet/Filter.lua

@@ -17,6 +17,10 @@ local TEST_DATA = {
 describe("Mount tracker", function()
   local env, ns
 
+  local function windowHas(text)
+    return (ns.Window.GetText() or ""):find(text, 1, true) ~= nil
+  end
+
   local function inRaid(instanceID, difficultyID)
     env.instance = { inInstance = true, instanceType = "raid", difficultyID = difficultyID, instanceID = instanceID }
   end
@@ -89,9 +93,9 @@ describe("Mount tracker", function()
 
       env.slash("mounts")
 
-      assert.is_true(env.printed("Icecrown Citadel - free: Nubbel-Silvermoon"))
-      assert.is_true(env.printed("Invincible - The Lich King, 1 attempt"))
-      assert.is_true(env.printed("Collected 1 of 2 tracked raid mounts."))
+      assert.is_true(windowHas("Icecrown Citadel - free: Nubbel-Silvermoon"))
+      assert.is_true(windowHas("Invincible - The Lich King, 1 attempt"))
+      assert.is_true(windowHas("Collected 1 of 2 tracked raid mounts."))
     end)
 
     it("lists unrecognised items with check", function()
@@ -117,8 +121,8 @@ describe("Mount tracker", function()
 
       env.slash("mounts")
 
-      assert.is_true(env.printed("Still loading 1 mounts"))
-      assert.is_false(env.printed("Invincible"))
+      assert.is_true(windowHas("Still loading 1 mounts"))
+      assert.is_false(windowHas("Invincible"))
     end)
 
     it("check waits for uncached items before calling them wrong", function()

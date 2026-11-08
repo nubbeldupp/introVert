@@ -16,8 +16,20 @@ local STUBBED_GLOBALS = {
   "CreateSettingsButtonInitializer", "MinimalSliderWithSteppersMixin",
   "StaticPopupDialogs", "StaticPopup_Show", "InCombatLockdown", "ACCEPT", "CANCEL",
   "GetNumSavedInstances", "GetSavedInstanceInfo", "RequestRaidInfo", "GetRealmName", "time",
-  "C_MountJournal", "C_Item",
+  "C_MountJournal", "C_Item", "UISpecialFrames",
 }
+
+-- Unknown UI methods (SetBackdrop, SetMovable, ...) are accepted and ignored.
+local function noop() end
+local IGNORE_UNKNOWN = { __index = function() return noop end }
+
+local function newFontString()
+  local fontString = {}
+  function fontString:SetText(text) self.text = text end
+  function fontString:GetText() return self.text end
+  function fontString:GetStringHeight() return 100 end
+  return setmetatable(fontString, IGNORE_UNKNOWN)
+end
 
 local saved = {}
 
@@ -45,10 +57,17 @@ local function newFrame(env, kind)
   function frame:Hide() self.shown = false end
   function frame:IsShown() return self.shown end
   function frame:Click() self.scripts.OnClick(self) end
+  frame.enabled = true
+  function frame:Enable() self.enabled = true end
+  function frame:Disable() self.enabled = false end
+  frame.highlightLocked = false
+  function frame:LockHighlight() self.highlightLocked = true end
+  function frame:UnlockHighlight() self.highlightLocked = false end
+  function frame:CreateFontString() return newFontString() end
   if kind == "Button" then
     env.buttons[#env.buttons + 1] = frame
   end
-  return frame
+  return setmetatable(frame, IGNORE_UNKNOWN)
 end
 
 local function installUi(env)
@@ -66,6 +85,7 @@ local function installUi(env)
   _G.ChatTypeInfo = { RAID_WARNING = {} }
   _G.RaidNotice_AddMessage = function(_, text) env.notices[#env.notices + 1] = text end
   _G.date = os.date
+  _G.UISpecialFrames = {}
 end
 
 local function installGame(env)

@@ -76,10 +76,8 @@ local function resolve()
   return Mounts.resolve(ns.RaidMountData, lookupMount)
 end
 
-local function printMounts()
-  for _, line in ipairs(Mounts.lines(resolve(), attempts(), ns.db.characters, time())) do
-    ns.Print(line)
-  end
+local function mountLines()
+  return Mounts.lines(resolve(), attempts(), ns.db.characters, time())
 end
 
 local function printCheck()
@@ -100,14 +98,17 @@ local function onCommand(input)
   if input:match("^%s*(%S*)"):lower() == "check" then
     printCheck()
   else
-    printMounts()
+    ns.Window.Show("mounts")
   end
 end
 
 function Tracker.OnInit()
   requestItems()
   ns.On("ENCOUNTER_END", onEncounterEnd)
+  -- Mount items load in the background; redraw so "Still loading" clears.
+  ns.On("ITEM_DATA_LOAD_RESULT", function() ns.Window.Refresh() end)
 end
 
+ns.Window.AddView("mounts", "Mounts", mountLines)
 ns.RegisterCommand("mounts", onCommand, HELP_LINES)
 ns.RegisterModule("mounts", Tracker)

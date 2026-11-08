@@ -92,13 +92,23 @@ describe("Raid lockouts", function()
       ["Abe-Realm"] = { lockouts = { lockout("Karazhan", NOW - 1) } },
     }
 
-    it("lists characters alphabetically with active lockouts", function()
+    it("lists characters alphabetically, one indented line per lockout", function()
       local lines = Lockouts.characterLines(characters, NOW)
 
       assert.same({
-        "Abe-Realm: no active raid lockouts",
-        "Zed-Realm: Ulduar (Normal) 3/8, resets in 1d 0h",
+        "Abe-Realm",
+        "  no active raid lockouts",
+        "Zed-Realm",
+        "  Ulduar (Normal) 3/8, resets in 1d 0h",
       }, lines)
+    end)
+
+    it("shortens Looking For Raid to LFR", function()
+      local lfr = { ["Abe-Realm"] = { lockouts = { lockout("The Venomous Abyss", NOW + DAY, "Looking For Raid") } } }
+
+      local lines = Lockouts.characterLines(lfr, NOW)
+
+      assert.equal("  The Venomous Abyss (LFR) 3/8, resets in 1d 0h", lines[2])
     end)
 
     it("returns nothing when no characters are known", function()

@@ -20,6 +20,14 @@ off in premades, follower dungeons and the open world.
 - **Loud alarm** (Master channel + taskbar flash) for ready checks, role checks and queue pops.
 - **Hidden log**: read what was filtered with `/iv quiet log` (session only, never saved).
 
+### Window
+
+`/iv window` opens the introVert window: movable (drag it), closes with
+Escape, one tab per module (Raids, Mounts). It updates live while open,
+e.g. when a mount attempt is counted. `/iv raids` and `/iv mounts` open it
+on their tab; quick answers (`/iv raids <name>`, `/iv mounts check`) stay
+in chat.
+
 ### Raid lockouts (Raid Farm Planner, part 1)
 
 Records every character's raid lockouts (account-wide) each time you log in

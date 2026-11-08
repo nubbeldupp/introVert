@@ -4,7 +4,11 @@ local Wow = require("tests.support.wow")
 local DAY = 24 * 3600
 
 describe("Raid lockout tracker", function()
-  local env
+  local env, ns
+
+  local function windowHas(text)
+    return (ns.Window.GetText() or ""):find(text, 1, true) ~= nil
+  end
 
   local function raid(name, overrides)
     local base = {
@@ -24,7 +28,7 @@ describe("Raid lockout tracker", function()
 
   before_each(function()
     env = Wow.install()
-    Wow.loadAddon(helper)
+    ns = Wow.loadAddon(helper)
     env.fire("ADDON_LOADED", "IntroVert")
   end)
 
@@ -79,21 +83,27 @@ describe("Raid lockout tracker", function()
   end)
 
   describe("/iv raids", function()
-    it("explains when nothing is recorded yet", function()
+    it("explains in the window when nothing is recorded yet", function()
       env.slash("raids")
+
+      assert.is_true(windowHas("No lockouts recorded yet"))
+    end)
+
+    it("explains in chat when a raid is queried before anything is recorded", function()
+      env.slash("raids ulduar")
 
       assert.is_true(env.printed("No lockouts recorded yet"))
     end)
 
-    it("lists every known character", function()
+    it("lists every known character in the window", function()
       env.savedInstances = { raid("Ulduar") }
       env.fire("UPDATE_INSTANCE_INFO")
       _G.IntroVertDB.characters["Alt-Silvermoon"] = { lockouts = {}, updatedAt = env.time }
 
       env.slash("raids")
 
-      assert.is_true(env.printed("Alt-Silvermoon: no active raid lockouts"))
-      assert.is_true(env.printed("Nubbel-Silvermoon: Ulduar (Normal) 3/8, resets in 2d 0h"))
+      assert.is_true(windowHas("Alt-Silvermoon|r\n  no active raid lockouts"))
+      assert.is_true(windowHas("Nubbel-Silvermoon|r\n  Ulduar (Normal) 3/8, resets in 2d 0h"))
     end)
 
     it("hides lockouts that have reset since they were recorded", function()
@@ -103,7 +113,7 @@ describe("Raid lockout tracker", function()
 
       env.slash("raids")
 
-      assert.is_true(env.printed("Nubbel-Silvermoon: no active raid lockouts"))
+      assert.is_true(windowHas("Nubbel-Silvermoon|r\n  no active raid lockouts"))
     end)
 
     it("shows locked and free characters for one raid", function()

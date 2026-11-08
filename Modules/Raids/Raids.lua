@@ -55,10 +55,11 @@ end
 
 -- Slash commands ---------------------------------------------------------------
 
-local function printAll()
-  for _, line in ipairs(Lockouts.characterLines(characters(), time())) do
-    ns.Print(line)
+local function overviewLines()
+  if next(characters()) == nil then
+    return { NO_DATA }
   end
+  return Lockouts.characterLines(characters(), time())
 end
 
 local function printRaid(query)
@@ -97,15 +98,15 @@ local function onCommand(input)
     forget(rest)
     return
   end
+  if args == "" then
+    ns.Window.Show("raids")
+    return
+  end
   if next(characters()) == nil then
     ns.Print(NO_DATA)
     return
   end
-  if args == "" then
-    printAll()
-  else
-    printRaid(args)
-  end
+  printRaid(args)
 end
 
 function Raids.OnInit()
@@ -114,5 +115,6 @@ function Raids.OnInit()
   ns.On("ENCOUNTER_END", onEncounterEnd)
 end
 
+ns.Window.AddView("raids", "Raids", overviewLines)
 ns.RegisterCommand("raids", onCommand, HELP_LINES)
 ns.RegisterModule("raids", Raids)

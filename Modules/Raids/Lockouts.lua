@@ -61,23 +61,37 @@ function Lockouts.formatDuration(seconds)
   return ("%dm"):format(math.floor(value / MINUTE))
 end
 
+local DETAIL_INDENT = "  "
+local NO_LOCKOUTS = "no active raid lockouts"
+local SHORT_DIFFICULTY = { ["Looking For Raid"] = "LFR" }
+
+local function describe(lockout, now)
+  local difficulty = SHORT_DIFFICULTY[lockout.difficultyName] or lockout.difficultyName
+  return ("%s (%s) %d/%d, resets in %s"):format(
+    lockout.name, difficulty, lockout.progress, lockout.total,
+    Lockouts.formatDuration(lockout.expiresAt - now))
+end
+
 local function describeAll(lockouts, now)
   local parts = {}
   for _, lockout in ipairs(lockouts) do
-    parts[#parts + 1] = ("%s (%s) %d/%d, resets in %s"):format(
-      lockout.name, lockout.difficultyName, lockout.progress, lockout.total,
-      Lockouts.formatDuration(lockout.expiresAt - now))
+    parts[#parts + 1] = describe(lockout, now)
   end
   return table.concat(parts, " | ")
 end
 
--- One line per character, alphabetical.
+-- Character name as a header, then one indented line per active lockout.
 function Lockouts.characterLines(characters, now)
   local lines = {}
   for _, name in ipairs(sortedKeys(characters)) do
+    lines[#lines + 1] = name
     local active = Lockouts.active(characters[name].lockouts, now)
-    local text = #active > 0 and describeAll(active, now) or "no active raid lockouts"
-    lines[#lines + 1] = name .. ": " .. text
+    if #active == 0 then
+      lines[#lines + 1] = DETAIL_INDENT .. NO_LOCKOUTS
+    end
+    for _, lockout in ipairs(active) do
+      lines[#lines + 1] = DETAIL_INDENT .. describe(lockout, now)
+    end
   end
   return lines
 end
