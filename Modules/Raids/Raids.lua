@@ -15,10 +15,6 @@ local HELP_LINES = {
 
 local Raids = {}
 
-local function characterKey()
-  return ("%s-%s"):format(UnitName("player"), GetRealmName())
-end
-
 local function characters()
   return ns.db.characters
 end
@@ -40,7 +36,7 @@ end
 
 local function record()
   local now = time()
-  ns.UpdateSetting({ "characters", characterKey() }, {
+  ns.UpdateSetting({ "characters", ns.CharacterKey() }, {
     updatedAt = now,
     lockouts = Lockouts.fromSaved(readSavedInstances(), now),
   })

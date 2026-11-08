@@ -9,7 +9,11 @@ local KILL_SUCCESS = 1
 local HELP_LINES = {
   "/iv mounts - missing raid mounts, attempts and free alts",
   "/iv mounts check - list mount data the game does not recognise",
+  "/iv mounts set <mount> <count> - enter attempts from before introVert",
 }
+
+local SET_USAGE = "Usage: /iv mounts set <mount> <count>, e.g. /iv mounts set invincible 12"
+local MAX_ATTEMPTS = 100000
 
 local Tracker = {}
 
@@ -94,9 +98,42 @@ local function printCheck()
   end
 end
 
+local function matchNames(matches)
+  local names = {}
+  for index, match in ipairs(matches) do
+    names[index] = match.name
+  end
+  table.sort(names)
+  return table.concat(names, ", ")
+end
+
+local function setAttempts(args)
+  local query, countText = args:match("^(.-)%s+(%d+)$")
+  local count = tonumber(countText)
+  if not query or query == "" or not count or count > MAX_ATTEMPTS then
+    ns.Print(SET_USAGE)
+    return
+  end
+  local matches = Mounts.match(ns.RaidMountData, lookupMount, query)
+  if #matches == 0 then
+    ns.Print(("No tracked mount matches '%s'."):format(query))
+    return
+  end
+  if #matches > 1 then
+    ns.Print(("Several mounts match '%s': %s. Be more specific."):format(query, matchNames(matches)))
+    return
+  end
+  ns.UpdateSetting({ "attempts", matches[1].itemID }, count)
+  ns.Print(("%s: attempts set to %d."):format(matches[1].name, count))
+end
+
 local function onCommand(input)
-  if input:match("^%s*(%S*)"):lower() == "check" then
+  local first, rest = input:match("^%s*(%S*)%s*(.-)%s*$")
+  local subcommand = first:lower()
+  if subcommand == "check" then
     printCheck()
+  elseif subcommand == "set" then
+    setAttempts(rest)
   else
     ns.Window.Show("mounts")
   end
@@ -109,6 +146,10 @@ function Tracker.OnInit()
   ns.On("ITEM_DATA_LOAD_RESULT", function() ns.Window.Refresh() end)
 end
 
+-- Missing-mount data for other modules (Finder).
+Tracker.Resolve = resolve
+
 ns.Window.AddView("mounts", "Mounts", mountLines)
 ns.RegisterCommand("mounts", onCommand, HELP_LINES)
 ns.RegisterModule("mounts", Tracker)
+ns.MountTracker = Tracker

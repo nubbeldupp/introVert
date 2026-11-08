@@ -2,6 +2,7 @@
 -- `/iv mounts check` in game; any item it lists is wrong and is ignored.
 --
 -- instanceID: map ID (same as GetInstanceInfo / GetSavedInstanceInfo).
+-- minutes: rough solo clear time to the mount boss (guess; used by Finder).
 -- itemID: the mount item; the game resolves name and collected state.
 -- boss: encounter name as sent by ENCOUNTER_END (English client).
 -- difficulties: optional list of difficulty IDs that can drop it
@@ -16,78 +17,78 @@ local MYTHIC = 16
 ns.RaidMountData = {
   raids = {
     {
-      instanceID = 532, name = "Karazhan",
+      instanceID = 532, name = "Karazhan", minutes = 15,
       mounts = { { itemID = 30480, boss = "Attumen the Huntsman" } },
     },
     {
-      instanceID = 550, name = "Tempest Keep",
+      instanceID = 550, name = "Tempest Keep", minutes = 10,
       mounts = { { itemID = 32458, boss = "Kael'thas Sunstrider" } },
     },
     {
-      instanceID = 249, name = "Onyxia's Lair",
+      instanceID = 249, name = "Onyxia's Lair", minutes = 3,
       mounts = { { itemID = 49636, boss = "Onyxia" } },
     },
     {
-      instanceID = 616, name = "The Eye of Eternity",
+      instanceID = 616, name = "The Eye of Eternity", minutes = 3,
       mounts = {
         { itemID = 43952, boss = "Malygos" },
         { itemID = 43953, boss = "Malygos" },
       },
     },
     {
-      instanceID = 615, name = "The Obsidian Sanctum",
+      instanceID = 615, name = "The Obsidian Sanctum", minutes = 3,
       mounts = {
         { itemID = 43986, boss = "Sartharion", difficulties = { LEGACY_10_NORMAL }, note = "3 drakes up" },
         { itemID = 43954, boss = "Sartharion", difficulties = { LEGACY_25_NORMAL }, note = "3 drakes up" },
       },
     },
     {
-      instanceID = 603, name = "Ulduar",
+      instanceID = 603, name = "Ulduar", minutes = 25,
       mounts = { { itemID = 45693, boss = "Yogg-Saron", note = "no Keepers" } },
     },
     {
-      instanceID = 631, name = "Icecrown Citadel",
+      instanceID = 631, name = "Icecrown Citadel", minutes = 20,
       mounts = { { itemID = 50818, boss = "The Lich King", difficulties = { LEGACY_25_HEROIC }, note = "25 Heroic" } },
     },
     {
-      instanceID = 720, name = "Firelands",
+      instanceID = 720, name = "Firelands", minutes = 10,
       mounts = {
         { itemID = 71665, boss = "Alysrazor" },
         { itemID = 69224, boss = "Ragnaros" },
       },
     },
     {
-      instanceID = 967, name = "Dragon Soul",
+      instanceID = 967, name = "Dragon Soul", minutes = 15,
       mounts = {
         { itemID = 78919, boss = "Ultraxion" },
         { itemID = 77067, boss = "Madness of Deathwing" },
       },
     },
     {
-      instanceID = 1008, name = "Mogu'shan Vaults",
+      instanceID = 1008, name = "Mogu'shan Vaults", minutes = 10,
       mounts = { { itemID = 87777, boss = "Elegon" } },
     },
     {
-      instanceID = 1098, name = "Throne of Thunder",
+      instanceID = 1098, name = "Throne of Thunder", minutes = 20,
       mounts = {
         { itemID = 93666, boss = "Horridon" },
         { itemID = 95059, boss = "Ji-Kun" },
       },
     },
     {
-      instanceID = 1136, name = "Siege of Orgrimmar",
+      instanceID = 1136, name = "Siege of Orgrimmar", minutes = 25,
       mounts = { { itemID = 104253, boss = "Garrosh Hellscream", difficulties = { MYTHIC }, note = "Mythic" } },
     },
     {
-      instanceID = 1205, name = "Blackrock Foundry",
+      instanceID = 1205, name = "Blackrock Foundry", minutes = 15,
       mounts = { { itemID = 116660, boss = "Blackhand", difficulties = { MYTHIC }, note = "Mythic" } },
     },
     {
-      instanceID = 1448, name = "Hellfire Citadel",
+      instanceID = 1448, name = "Hellfire Citadel", minutes = 20,
       mounts = { { itemID = 123890, boss = "Archimonde", difficulties = { MYTHIC }, note = "Mythic" } },
     },
     {
-      instanceID = 1712, name = "Antorus, the Burning Throne",
+      instanceID = 1712, name = "Antorus, the Burning Throne", minutes = 20,
       mounts = { { itemID = 152789, boss = "Argus the Unmaker", difficulties = { MYTHIC }, note = "Mythic" } },
     },
   },

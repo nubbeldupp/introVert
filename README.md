@@ -49,6 +49,7 @@ and "collected" come from your mount journal; the addon only stores item IDs.
 ```
 /iv mounts          missing mounts per raid, attempts, and which alts are free
 /iv mounts check    list item IDs the game does not recognise as mounts
+/iv mounts set invincible 12    enter attempts from before you had introVert
 ```
 
 - An attempt is counted when you kill the dropping boss on an eligible
@@ -81,6 +82,19 @@ Leaves out PvP, Feats of Strength, Legacy, guild and completed achievements.
 Dungeons & Raids stay in (old raids are soloable) but are tagged `[group]`.
 The scan runs when the tab opens and is cached until your progress changes.
 
+### Solo Content Finder
+
+`/iv finder [minutes]` (or `/iv solo`) opens the **Finder** tab with a plan
+for a solo session of that length (default 60, also a slider in options):
+
+- raids where **this character** is free and you are missing mounts
+  (rough clear times per raid in `MountData.lua`, tune as you like)
+- today's bountiful delves, ranked higher while your Great Vault world row
+  is not full
+- picked by value per minute until the time budget is full; the rest is
+  listed under "Also worth doing"
+- achievements at 90%+ listed separately (no time estimate possible)
+
 ### Settings
 
 All settings are in **Options → AddOns → introVert** (or type `/iv options`):
@@ -110,6 +124,9 @@ If the client shows the addon as out of date, check your build with
 `/dump (select(4, GetBuildInfo()))` and add it to `## Interface` in `IntroVert.toc`.
 
 ## Development
+
+Every push runs the full test suite on GitHub Actions with Lua 5.1 (the WoW
+client's version) and Lua 5.4 (`.github/workflows/tests.yml`).
 
 Requires Lua + [busted](https://lunarmodules.github.io/busted/) (+ luacov for coverage):
 

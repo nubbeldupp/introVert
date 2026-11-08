@@ -26,6 +26,9 @@ Defaults.values = {
   attempts = {},
   -- Account-wide delve history, keyed by delve name: { runs, bestTier, lastAt }.
   delves = {},
+  finder = {
+    minutes = 60,
+  },
 }
 
 -- A table counts as a list when it is empty or has a sequence part.

@@ -29,3 +29,6 @@ Modules/Delves/DelveTracker.lua
 
 Modules/Achievements/Achievements.lua
 Modules/Achievements/AchievementTracker.lua
+
+Modules/Finder/Finder.lua
+Modules/Finder/FinderTracker.lua

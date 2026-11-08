@@ -140,6 +140,58 @@ describe("Mount tracker", function()
 
       assert.is_true(env.printed("/iv mounts - missing raid mounts"))
       assert.is_true(env.printed("/iv mounts check"))
+      assert.is_true(env.printed("/iv mounts set <mount> <count>"))
+    end)
+  end)
+
+  describe("/iv mounts set", function()
+    it("sets the attempt count for a mount by name", function()
+      env.slash("mounts set Invincible 12")
+
+      assert.equal(12, IntroVertDB.attempts[50818])
+      assert.is_true(env.printed("Invincible: attempts set to 12."))
+    end)
+
+    it("accepts part of the name, ignoring case", function()
+      env.slash("mounts set invin 3")
+
+      assert.equal(3, IntroVertDB.attempts[50818])
+    end)
+
+    it("prefers an exact name over partial matches", function()
+      env.mounts[45693] = { mountID = 304, name = "Invincible's Shadow", collected = false }
+
+      env.slash("mounts set invincible 7")
+
+      assert.equal(7, IntroVertDB.attempts[50818])
+    end)
+
+    it("asks to be more specific when several mounts match", function()
+      env.slash("mounts set i 5")
+
+      assert.is_true(env.printed("Several mounts match 'i': Invincible, Mimiron's Head. Be more specific."))
+      assert.is_nil(IntroVertDB.attempts[50818])
+    end)
+
+    it("reports a name that matches nothing", function()
+      env.slash("mounts set Nothing 5")
+
+      assert.is_true(env.printed("No tracked mount matches 'Nothing'."))
+    end)
+
+    it("shows usage for a missing or invalid count", function()
+      env.slash("mounts set invincible")
+      env.slash("mounts set invincible -2")
+      env.slash("mounts set invincible 999999")
+
+      local usages = 0
+      for _, line in ipairs(env.prints) do
+        if line:find("Usage: /iv mounts set", 1, true) then
+          usages = usages + 1
+        end
+      end
+      assert.equal(3, usages)
+      assert.is_nil(IntroVertDB.attempts[50818])
     end)
   end)
 end)

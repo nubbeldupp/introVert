@@ -168,6 +168,7 @@ describe("Raid mount data", function()
     for _, raid in ipairs(data.raids) do
       assert.equal("number", type(raid.instanceID), raid.name)
       assert.equal("string", type(raid.name))
+      assert.equal("number", type(raid.minutes), raid.name)
       assert.is_true(#raid.mounts > 0, raid.name)
       for _, mount in ipairs(raid.mounts) do
         assert.equal("number", type(mount.itemID), raid.name)

@@ -16,6 +16,11 @@ function ns.Print(message)
   print(PRINT_PREFIX .. tostring(message))
 end
 
+-- "Name-Realm" of the logged-in character; the key for per-character data.
+function ns.CharacterKey()
+  return ("%s-%s"):format(UnitName("player"), GetRealmName())
+end
+
 -- Subscribe to a game event. Errors in one handler never block the others.
 function ns.On(event, handler)
   if not handlers[event] then

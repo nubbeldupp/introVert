@@ -70,6 +70,11 @@ function Tracker.OnInit()
   ns.On("WEEKLY_REWARDS_UPDATE", function() ns.Window.Refresh() end)
 end
 
+-- Raw readers for other modules (Finder); they may raise if an API changed.
+Tracker.ReadVault = readVault
+Tracker.ReadBountiful = readBountiful
+
 ns.Window.AddView("delves", "Delves", delveLines)
 ns.RegisterCommand("delves", function() ns.Window.Show("delves") end, HELP_LINES)
 ns.RegisterModule("delves", Tracker)
+ns.DelveTracker = Tracker

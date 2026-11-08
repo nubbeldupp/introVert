@@ -44,7 +44,8 @@ local function byProgress(a, b)
   return a.name < b.name
 end
 
-local function entryLine(entry)
+-- "  92% Name (11/12) - Reward [group]"; shared with the Finder.
+function Achievements.entryLine(entry)
   local percent = math.floor(entry.fraction * 100 + ROUNDING_GUARD)
   local reward = entry.reward and (" - " .. entry.reward) or ""
   local group = entry.group and " [group]" or ""
@@ -61,7 +62,7 @@ local function section(entries, keep)
   table.sort(picked, byProgress)
   local lines = {}
   for index = 1, math.min(#picked, Achievements.LIST_LIMIT) do
-    lines[index] = entryLine(picked[index])
+    lines[index] = Achievements.entryLine(picked[index])
   end
   if #lines == 0 then
     lines[1] = NONE

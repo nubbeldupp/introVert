@@ -44,10 +44,34 @@ function Mounts.resolve(data, lookup)
       end
     end
     if #missing > 0 then
-      result.raids[#result.raids + 1] = { instanceID = raid.instanceID, name = raid.name, missing = missing }
+      result.raids[#result.raids + 1] = {
+        instanceID = raid.instanceID, name = raid.name, minutes = raid.minutes, missing = missing,
+      }
     end
   end
   return result
+end
+
+-- Tracked mounts whose name matches `query` (plain, case-insensitive).
+-- An exact name match wins over partial ones. Returns { { itemID, name } }.
+function Mounts.match(data, lookup, query)
+  local wanted = query:lower()
+  local exact, partial = {}, {}
+  for _, raid in ipairs(data.raids) do
+    for _, mount in ipairs(raid.mounts) do
+      local info = lookup(mount.itemID)
+      if info and info.name then
+        local name = info.name:lower()
+        local hit = { itemID = mount.itemID, name = info.name }
+        if name == wanted then
+          exact[#exact + 1] = hit
+        elseif name:find(wanted, 1, true) then
+          partial[#partial + 1] = hit
+        end
+      end
+    end
+  end
+  return #exact > 0 and exact or partial
 end
 
 -- Item IDs whose drop chance this kill counted as an attempt for.

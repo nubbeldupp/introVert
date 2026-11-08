@@ -11,7 +11,7 @@ local UNAVAILABLE = { "  Not available on this client." }
 local HELP_LINES = { "/iv achievements - almost-done and rewarding solo achievements (also /iv ach)" }
 
 local Tracker = {}
-local cachedLines
+local cachedEntries
 local dirty = true
 
 local function topCategory(categoryID)
@@ -72,13 +72,21 @@ local function scan()
   return entries
 end
 
-local function achievementLines()
-  if dirty or not cachedLines then
-    local ok, entries = pcall(scan)
-    cachedLines = ok and Achievements.lines(entries) or UNAVAILABLE
+-- Scanned entries, cached until progress changes. May raise if an API changed.
+local function entries()
+  if dirty or not cachedEntries then
+    cachedEntries = scan()
     dirty = false
   end
-  return cachedLines
+  return cachedEntries
+end
+
+local function achievementLines()
+  local ok, result = pcall(entries)
+  if not ok then
+    return UNAVAILABLE
+  end
+  return Achievements.lines(result)
 end
 
 local function open()
@@ -94,7 +102,11 @@ function Tracker.OnInit()
   end)
 end
 
+-- Scanned entries for other modules (Finder).
+Tracker.Entries = entries
+
 ns.Window.AddView("achievements", "Achievements", achievementLines)
 ns.RegisterCommand("achievements", open, HELP_LINES)
 ns.RegisterCommand("ach", open)
 ns.RegisterModule("achievements", Tracker)
+ns.AchievementTracker = Tracker
