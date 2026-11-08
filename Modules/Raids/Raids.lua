@@ -27,8 +27,9 @@ local function readSavedInstances()
   local entries = {}
   for index = 1, GetNumSavedInstances() do
     local name, _, reset, difficultyID, locked, extended, _, isRaid, _, difficultyName,
-      numEncounters, encounterProgress = GetSavedInstanceInfo(index)
+      numEncounters, encounterProgress, _, instanceID = GetSavedInstanceInfo(index)
     entries[#entries + 1] = {
+      instanceID = instanceID,
       name = name, reset = reset, difficultyID = difficultyID, locked = locked,
       extended = extended, isRaid = isRaid, difficultyName = difficultyName,
       numEncounters = numEncounters, encounterProgress = encounterProgress,

@@ -16,6 +16,7 @@ local STUBBED_GLOBALS = {
   "CreateSettingsButtonInitializer", "MinimalSliderWithSteppersMixin",
   "StaticPopupDialogs", "StaticPopup_Show", "InCombatLockdown", "ACCEPT", "CANCEL",
   "GetNumSavedInstances", "GetSavedInstanceInfo", "RequestRaidInfo", "GetRealmName", "time",
+  "C_MountJournal", "C_Item",
 }
 
 local saved = {}
@@ -28,6 +29,7 @@ local function newEnv()
     isLFG = false, playerName = "Nubbel", role = "DAMAGER", now = 100,
     secret = false, inCombat = false,
     realm = "Silvermoon", time = 1000000, savedInstances = {}, raidInfoRequests = 0,
+    mounts = {}, uncachedItems = {}, itemLoadRequests = {},
     settings = { categories = {}, controls = {}, initializers = {}, byVariable = {} },
   }
 end
@@ -69,8 +71,27 @@ end
 local function installGame(env)
   _G.IsInInstance = function() return env.instance.inInstance, env.instance.instanceType end
   _G.GetInstanceInfo = function()
-    return "Test", env.instance.instanceType, env.instance.difficultyID
+    return "Test", env.instance.instanceType, env.instance.difficultyID, "Difficulty",
+      10, 0, false, env.instance.instanceID
   end
+  _G.C_Item = {
+    IsItemDataCachedByID = function(itemID) return not env.uncachedItems[itemID] end,
+    RequestLoadItemDataByID = function(itemID) env.itemLoadRequests[itemID] = true end,
+  }
+  -- env.mounts: itemID -> { mountID, name, collected }
+  _G.C_MountJournal = {
+    GetMountFromItem = function(itemID)
+      local mount = env.mounts[itemID]
+      return mount and mount.mountID
+    end,
+    GetMountInfoByID = function(mountID)
+      for _, mount in pairs(env.mounts) do
+        if mount.mountID == mountID then
+          return mount.name, 0, 0, false, true, 0, false, false, nil, false, mount.collected, mountID
+        end
+      end
+    end,
+  }
   _G.IsPartyLFG = function() return env.isLFG end
   _G.UnitName = function() return env.playerName end
   _G.UnitGroupRolesAssigned = function() return env.role end

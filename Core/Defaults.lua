@@ -22,6 +22,8 @@ Defaults.values = {
   },
   -- Account-wide, keyed by "Name-Realm": { updatedAt, lockouts = { ... } }.
   characters = {},
+  -- Account-wide raid mount attempts, keyed by itemID: count.
+  attempts = {},
 }
 
 -- A table counts as a list when it is empty or has a sequence part.

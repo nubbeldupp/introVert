@@ -27,6 +27,7 @@ function Lockouts.fromSaved(entries, now)
   for _, entry in ipairs(entries or {}) do
     if entry.isRaid and (entry.locked or entry.extended) then
       result[#result + 1] = {
+        instanceID = entry.instanceID,
         name = entry.name,
         difficultyName = entry.difficultyName,
         progress = entry.encounterProgress,

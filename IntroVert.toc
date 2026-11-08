@@ -19,3 +19,6 @@ Modules/Quiet/Options.lua
 
 Modules/Raids/Lockouts.lua
 Modules/Raids/Raids.lua
+Modules/Raids/MountData.lua
+Modules/Raids/Mounts.lua
+Modules/Raids/MountTracker.lua

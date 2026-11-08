@@ -33,6 +33,23 @@ or kill a raid boss. Lockouts that have reset disappear automatically.
 
 Log in once on each alt so it gets recorded.
 
+### Raid mounts (Raid Farm Planner, part 2)
+
+Tracks mount drops from 15 legacy raids (Karazhan to Antorus). Mount names
+and "collected" come from your mount journal; the addon only stores item IDs.
+
+```
+/iv mounts          missing mounts per raid, attempts, and which alts are free
+/iv mounts check    list item IDs the game does not recognise as mounts
+```
+
+- An attempt is counted when you kill the dropping boss on an eligible
+  difficulty while the mount is still uncollected ("Attempt 12 for Invincible.").
+- Boss matching uses English encounter names, so attempt counting needs an
+  English client. The missing-mounts list works in any language.
+- The data in `Modules/Raids/MountData.lua` is unverified for 12.1; run
+  `/iv mounts check` once and report anything it lists.
+
 ### Settings
 
 All settings are in **Options → AddOns → introVert** (or type `/iv options`):
