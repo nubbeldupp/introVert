@@ -16,3 +16,6 @@ Modules/Quiet/Phrases.lua
 Modules/Quiet/Commands.lua
 Modules/Quiet/Quiet.lua
 Modules/Quiet/Options.lua
+
+Modules/Raids/Lockouts.lua
+Modules/Raids/Raids.lua

@@ -20,6 +20,8 @@ Defaults.values = {
     encounterFocus = true,
     wipeMuteSeconds = 30,
   },
+  -- Account-wide, keyed by "Name-Realm": { updatedAt, lockouts = { ... } }.
+  characters = {},
 }
 
 -- A table counts as a list when it is empty or has a sequence part.

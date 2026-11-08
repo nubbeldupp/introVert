@@ -20,6 +20,19 @@ off in premades, follower dungeons and the open world.
 - **Loud alarm** (Master channel + taskbar flash) for ready checks, role checks and queue pops.
 - **Hidden log**: read what was filtered with `/iv quiet log` (session only, never saved).
 
+### Raid lockouts (Raid Farm Planner, part 1)
+
+Records every character's raid lockouts (account-wide) each time you log in
+or kill a raid boss. Lockouts that have reset disappear automatically.
+
+```
+/iv raids                       all characters and their active lockouts
+/iv raids <name>                who is locked / free for one raid (e.g. /iv raids ulduar)
+/iv raids forget <Name-Realm>   remove a deleted character
+```
+
+Log in once on each alt so it gets recorded.
+
 ### Settings
 
 All settings are in **Options → AddOns → introVert** (or type `/iv options`):

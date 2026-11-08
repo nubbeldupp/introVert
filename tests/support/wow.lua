@@ -15,6 +15,7 @@ local STUBBED_GLOBALS = {
   "Settings", "CreateSettingsListSectionHeaderInitializer",
   "CreateSettingsButtonInitializer", "MinimalSliderWithSteppersMixin",
   "StaticPopupDialogs", "StaticPopup_Show", "InCombatLockdown", "ACCEPT", "CANCEL",
+  "GetNumSavedInstances", "GetSavedInstanceInfo", "RequestRaidInfo", "GetRealmName", "time",
 }
 
 local saved = {}
@@ -26,6 +27,7 @@ local function newEnv()
     instance = { inInstance = false, instanceType = "none", difficultyID = 0 },
     isLFG = false, playerName = "Nubbel", role = "DAMAGER", now = 100,
     secret = false, inCombat = false,
+    realm = "Silvermoon", time = 1000000, savedInstances = {}, raidInfoRequests = 0,
     settings = { categories = {}, controls = {}, initializers = {}, byVariable = {} },
   }
 end
@@ -86,6 +88,16 @@ local function installGame(env)
       env.leftCategory = category
     end,
   }
+  _G.GetRealmName = function() return env.realm end
+  _G.time = function() return env.time end
+  _G.RequestRaidInfo = function() env.raidInfoRequests = env.raidInfoRequests + 1 end
+  _G.GetNumSavedInstances = function() return #env.savedInstances end
+  -- Same return order as the real API (14 values).
+  _G.GetSavedInstanceInfo = function(index)
+    local e = env.savedInstances[index]
+    return e.name, index, e.reset, e.difficultyID, e.locked, e.extended, 0,
+      e.isRaid, 10, e.difficultyName, e.numEncounters, e.encounterProgress, false, e.instanceID
+  end
   _G.ChatFrame_AddMessageEventFilter = function(event, fn)
     env.filters[event] = env.filters[event] or {}
     table.insert(env.filters[event], fn)
