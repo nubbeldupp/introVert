@@ -121,6 +121,71 @@ describe("Delve tracker", function()
     end)
   end)
 
+  describe("Labyrinth of Kindo'jan", function()
+    local NAME = "The Labyrinth of Kindo'jan"
+
+    local function inLabyrinth()
+      env.instance = {
+        inInstance = true, instanceType = "scenario", difficultyID = 208,
+        name = NAME, difficultyName = "Delves", instanceID = 3043,
+      }
+      env.scenarioWidgetSet = 842
+      env.widgets = { [842] = { 6183 } }
+      env.widgetTiers = { [6183] = "1" }
+    end
+
+    local function clearChamber()
+      env.fire("SCENARIO_UPDATE")
+      env.fire("SCENARIO_COMPLETED")
+    end
+
+    it("counts each chamber instead of a run", function()
+      inLabyrinth()
+
+      clearChamber()
+      clearChamber()
+
+      assert.same(
+        { labyrinth = true, chambers = 2, bestTier = 1, bestVisit = 2, lastAt = env.time },
+        IntroVertDB.delves[NAME]
+      )
+      assert.is_true(env.printed("Labyrinth: chamber cleared (2 this visit), tier 1."))
+    end)
+
+    it("starts a new visit after leaving", function()
+      inLabyrinth()
+      clearChamber()
+      clearChamber()
+      env.instance = { inInstance = false, instanceType = "none", difficultyID = 0 }
+      env.fire("PLAYER_ENTERING_WORLD")
+      inLabyrinth()
+
+      clearChamber()
+
+      assert.equal(3, IntroVertDB.delves[NAME].chambers)
+      assert.equal(2, IntroVertDB.delves[NAME].bestVisit)
+      assert.is_true(env.printed("Labyrinth: chamber cleared (1 this visit), tier 1."))
+    end)
+
+    it("shows chambers in the Delves tab", function()
+      inLabyrinth()
+      clearChamber()
+
+      env.slash("delves")
+
+      assert.is_true(windowHas("The Labyrinth of Kindo'jan - best tier 1, 1 chamber, best visit 1/9"))
+    end)
+
+    it("leaves normal delves counting runs", function()
+      inDelve("Fungal Folly", "Tier 8")
+
+      env.fire("SCENARIO_COMPLETED")
+
+      assert.equal(1, IntroVertDB.delves["Fungal Folly"].runs)
+      assert.is_nil(IntroVertDB.delves["Fungal Folly"].labyrinth)
+    end)
+  end)
+
   describe("Delves tab", function()
     before_each(function()
       env.vault = {

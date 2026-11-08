@@ -16,8 +16,12 @@ local HELP_LINES = { "/iv delves - Great Vault progress, bountiful delves and yo
 local SCENARIO_WIDGET_SET_INDEX = 12
 local TIER_CAPTURE_EVENTS = { "SCENARIO_UPDATE", "SCENARIO_CRITERIA_UPDATE", "PLAYER_ENTERING_WORLD" }
 
+-- Map ID of The Labyrinth of Kindo'jan (GetInstanceInfo 8th return, 12.1.5).
+local LABYRINTH_INSTANCE_ID = 3043
+
 local Tracker = {}
 local capturedTier
+local visitChambers = 0
 
 local function safeSection(read, format)
   local ok, lines = pcall(function() return format(read()) end)
@@ -91,20 +95,35 @@ end
 local function captureTier()
   if not isInDelve() then
     capturedTier = nil
+    visitChambers = 0
     return
   end
   capturedTier = safeWidgetTier() or capturedTier
 end
 
+local function recordChamber(name, tier)
+  visitChambers = visitChambers + 1
+  ns.UpdateSetting({ "delves" }, Delves.recordLabyrinth(ns.db.delves, name, tier, visitChambers, time()))
+  ns.Print(("Labyrinth: chamber cleared (%d this visit), tier %s."):format(visitChambers, tier or "?"))
+end
+
+local function recordRun(name, tier)
+  ns.UpdateSetting({ "delves" }, Delves.record(ns.db.delves, name, tier, time()))
+  ns.Print(("Delve recorded: %s, tier %s."):format(name, tier or "?"))
+end
+
 local function onScenarioCompleted()
-  local name, _, difficultyID, difficultyName = GetInstanceInfo()
+  local name, _, difficultyID, difficultyName, _, _, _, instanceID = GetInstanceInfo()
   if difficultyID ~= DELVE_DIFFICULTY then
     return
   end
   local tier = capturedTier or safeWidgetTier() or Delves.parseTier(difficultyName)
   capturedTier = nil
-  ns.UpdateSetting({ "delves" }, Delves.record(ns.db.delves, name, tier, time()))
-  ns.Print(("Delve recorded: %s, tier %s."):format(name, tier or "?"))
+  if instanceID == LABYRINTH_INSTANCE_ID then
+    recordChamber(name, tier)
+  else
+    recordRun(name, tier)
+  end
 end
 
 function Tracker.OnInit()

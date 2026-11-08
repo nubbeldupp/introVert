@@ -68,6 +68,10 @@ and "collected" come from your mount journal; the addon only stores item IDs.
 - **Your delves**: each finished delve is recorded (account-wide) with best
   tier and run count; you get one line in chat ("Delve recorded: ...").
 
+The tier comes from the delve header widget of the scenario tracker.
+**The Labyrinth of Kindo'jan** reports every chamber as finished, so it is
+tracked by chambers instead of runs: "best tier 8, 14 chambers, best visit 9/9".
+
 Each section reads the game API defensively: if an API changed, that section
 shows "Not available on this client" instead of breaking the window.
 

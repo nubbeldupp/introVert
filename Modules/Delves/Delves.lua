@@ -35,6 +35,27 @@ function Delves.record(history, name, tier, now)
   return result
 end
 
+Delves.LABYRINTH_CHAMBERS = 9
+
+-- The Labyrinth reports every chamber as a finished scenario, so it counts
+-- chambers instead of runs. An older run-counted entry is carried over.
+function Delves.recordLabyrinth(history, name, tier, visitChambers, now)
+  local result = {}
+  for key, value in pairs(history or {}) do
+    result[key] = value
+  end
+  local previous = result[name] or {}
+  local chambers = previous.labyrinth and previous.chambers or (previous.runs or 0)
+  result[name] = {
+    labyrinth = true,
+    chambers = chambers + 1,
+    bestTier = math.max(previous.bestTier or 0, tier or 0),
+    bestVisit = math.max(previous.bestVisit or 0, visitChambers),
+    lastAt = now,
+  }
+  return result
+end
+
 local function byIndex(a, b)
   return a.index < b.index
 end
@@ -78,6 +99,19 @@ function Delves.bountifulLines(delves)
   return lines
 end
 
+local function plural(count, word)
+  return ("%d %s%s"):format(count, word, count == 1 and "" or "s")
+end
+
+local function historyLine(name, entry)
+  local tier = (entry.bestTier or 0) > 0 and tostring(entry.bestTier) or "?"
+  if entry.labyrinth then
+    return ("%s%s - best tier %s, %s, best visit %d/%d"):format(
+      INDENT, name, tier, plural(entry.chambers, "chamber"), entry.bestVisit, Delves.LABYRINTH_CHAMBERS)
+  end
+  return ("%s%s - best tier %s, %s"):format(INDENT, name, tier, plural(entry.runs, "run"))
+end
+
 function Delves.historyLines(history)
   local names = sortedKeys(history)
   if #names == 0 then
@@ -85,10 +119,7 @@ function Delves.historyLines(history)
   end
   local lines = {}
   for _, name in ipairs(names) do
-    local entry = history[name]
-    local tier = (entry.bestTier or 0) > 0 and tostring(entry.bestTier) or "?"
-    local unit = entry.runs == 1 and "run" or "runs"
-    lines[#lines + 1] = ("%s%s - best tier %s, %d %s"):format(INDENT, name, tier, entry.runs, unit)
+    lines[#lines + 1] = historyLine(name, history[name])
   end
   return lines
 end

@@ -105,6 +105,48 @@ describe("Delves", function()
     it("explains when nothing is recorded", function()
       assert.same({ "  No delves recorded yet. Finish a delve to start." }, Delves.historyLines({}))
     end)
+
+    it("shows chambers and best visit for the Labyrinth", function()
+      local lines = Delves.historyLines({
+        ["The Labyrinth of Kindo'jan"] = { labyrinth = true, chambers = 14, bestTier = 8, bestVisit = 9, lastAt = 1 },
+      })
+
+      assert.same({ "  The Labyrinth of Kindo'jan - best tier 8, 14 chambers, best visit 9/9" }, lines)
+    end)
+  end)
+
+  describe("recordLabyrinth", function()
+    local NAME = "The Labyrinth of Kindo'jan"
+
+    it("records the first chamber", function()
+      local result = Delves.recordLabyrinth({}, NAME, 1, 1, NOW)
+
+      assert.same({ labyrinth = true, chambers = 1, bestTier = 1, bestVisit = 1, lastAt = NOW }, result[NAME])
+    end)
+
+    it("adds chambers and keeps the best tier and best visit", function()
+      local history = { [NAME] = { labyrinth = true, chambers = 10, bestTier = 8, bestVisit = 9, lastAt = 1 } }
+
+      local result = Delves.recordLabyrinth(history, NAME, 3, 2, NOW)
+
+      assert.same({ labyrinth = true, chambers = 11, bestTier = 8, bestVisit = 9, lastAt = NOW }, result[NAME])
+    end)
+
+    it("turns an old run-counted entry into chambers", function()
+      local history = { [NAME] = { runs = 1, bestTier = 1, lastAt = 1 } }
+
+      local result = Delves.recordLabyrinth(history, NAME, 1, 2, NOW)
+
+      assert.same({ labyrinth = true, chambers = 2, bestTier = 1, bestVisit = 2, lastAt = NOW }, result[NAME])
+    end)
+
+    it("does not change the input", function()
+      local history = { [NAME] = { labyrinth = true, chambers = 1, bestTier = 1, bestVisit = 1, lastAt = 1 } }
+
+      Delves.recordLabyrinth(history, NAME, 5, 2, NOW)
+
+      assert.equal(1, history[NAME].chambers)
+    end)
   end)
 
   describe("lines", function()
