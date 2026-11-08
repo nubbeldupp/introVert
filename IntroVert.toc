@@ -1,0 +1,15 @@
+## Interface: 120107, 120105, 120100, 120007
+## Title: introVert
+## Notes: Quality of life for solo players: quiet LFG/LFR groups, solo progression tools.
+## Author: nubbeldupp
+## Version: 0.1.0
+## SavedVariables: IntroVertDB
+
+Core/Defaults.lua
+Core/Core.lua
+
+Modules/Quiet/Profile.lua
+Modules/Quiet/Filter.lua
+Modules/Quiet/Phrases.lua
+Modules/Quiet/Commands.lua
+Modules/Quiet/Quiet.lua

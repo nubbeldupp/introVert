@@ -1,0 +1,4 @@
+return {
+  include = { "Core/", "Modules/" },
+  exclude = { "tests/" },
+}

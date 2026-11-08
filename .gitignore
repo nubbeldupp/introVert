@@ -1,0 +1,6 @@
+# Coverage output
+luacov.stats.out
+luacov.report.out
+
+# macOS
+.DS_Store
