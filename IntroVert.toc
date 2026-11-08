@@ -23,3 +23,6 @@ Modules/Raids/Raids.lua
 Modules/Raids/MountData.lua
 Modules/Raids/Mounts.lua
 Modules/Raids/MountTracker.lua
+
+Modules/Delves/Delves.lua
+Modules/Delves/DelveTracker.lua

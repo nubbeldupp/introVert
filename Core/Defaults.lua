@@ -24,6 +24,8 @@ Defaults.values = {
   characters = {},
   -- Account-wide raid mount attempts, keyed by itemID: count.
   attempts = {},
+  -- Account-wide delve history, keyed by delve name: { runs, bestTier, lastAt }.
+  delves = {},
 }
 
 -- A table counts as a list when it is empty or has a sequence part.

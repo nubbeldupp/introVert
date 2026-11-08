@@ -58,6 +58,18 @@ and "collected" come from your mount journal; the addon only stores item IDs.
 - The data in `Modules/Raids/MountData.lua` is unverified for 12.1; run
   `/iv mounts check` once and report anything it lists.
 
+### Delve Companion
+
+`/iv delves` opens the **Delves** tab:
+
+- **This week**: Great Vault world-activity row, per slot done or "N more".
+- **Bountiful delves today**: found from every zone's delve markers.
+- **Your delves**: each finished delve is recorded (account-wide) with best
+  tier and run count; you get one line in chat ("Delve recorded: ...").
+
+Each section reads the game API defensively: if an API changed, that section
+shows "Not available on this client" instead of breaking the window.
+
 ### Settings
 
 All settings are in **Options → AddOns → introVert** (or type `/iv options`):

@@ -17,6 +17,7 @@ local STUBBED_GLOBALS = {
   "StaticPopupDialogs", "StaticPopup_Show", "InCombatLockdown", "ACCEPT", "CANCEL",
   "GetNumSavedInstances", "GetSavedInstanceInfo", "RequestRaidInfo", "GetRealmName", "time",
   "C_MountJournal", "C_Item", "UISpecialFrames",
+  "Enum", "C_WeeklyRewards", "C_Map", "C_AreaPoiInfo",
 }
 
 -- Unknown UI methods (SetBackdrop, SetMovable, ...) are accepted and ignored.
@@ -42,6 +43,7 @@ local function newEnv()
     secret = false, inCombat = false,
     realm = "Silvermoon", time = 1000000, savedInstances = {}, raidInfoRequests = 0,
     mounts = {}, uncachedItems = {}, itemLoadRequests = {},
+    vault = {}, zones = {}, delvePois = {},
     settings = { categories = {}, controls = {}, initializers = {}, byVariable = {} },
   }
 end
@@ -91,9 +93,29 @@ end
 local function installGame(env)
   _G.IsInInstance = function() return env.instance.inInstance, env.instance.instanceType end
   _G.GetInstanceInfo = function()
-    return "Test", env.instance.instanceType, env.instance.difficultyID, "Difficulty",
-      10, 0, false, env.instance.instanceID
+    return env.instance.name or "Test", env.instance.instanceType, env.instance.difficultyID,
+      env.instance.difficultyName or "Difficulty", 10, 0, false, env.instance.instanceID
   end
+  _G.Enum = { WeeklyRewardChestThresholdType = { World = 6 }, UIMapType = { Zone = 3 } }
+  _G.C_WeeklyRewards = { GetActivities = function() return env.vault end }
+  -- env.zones: { { mapID, name } }; env.delvePois: mapID -> { { poiID, name, atlasName } }
+  _G.C_Map = { GetMapChildrenInfo = function() return env.zones end }
+  _G.C_AreaPoiInfo = {
+    GetDelvesForMap = function(mapID)
+      local ids = {}
+      for _, poi in ipairs(env.delvePois[mapID] or {}) do
+        ids[#ids + 1] = poi.poiID
+      end
+      return ids
+    end,
+    GetAreaPOIInfo = function(mapID, poiID)
+      for _, poi in ipairs(env.delvePois[mapID] or {}) do
+        if poi.poiID == poiID then
+          return { name = poi.name, atlasName = poi.atlasName }
+        end
+      end
+    end,
+  }
   _G.C_Item = {
     IsItemDataCachedByID = function(itemID) return not env.uncachedItems[itemID] end,
     RequestLoadItemDataByID = function(itemID) env.itemLoadRequests[itemID] = true end,
