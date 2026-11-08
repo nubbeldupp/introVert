@@ -25,14 +25,26 @@ function ns.On(event, handler)
   handlers[event][#handlers[event] + 1] = handler
 end
 
+-- Runs fn, reporting (not raising) any error so one failure never blocks others.
+local function safeCall(fn, ...)
+  local ok, err = pcall(fn, ...)
+  if not ok then
+    geterrorhandler()(err)
+  end
+end
+
 eventFrame:SetScript("OnEvent", function(_, event, ...)
   for _, handler in ipairs(handlers[event] or {}) do
-    local ok, err = pcall(handler, event, ...)
-    if not ok then
-      geterrorhandler()(err)
-    end
+    safeCall(handler, event, ...)
   end
 end)
+
+local settingsListeners = {}
+
+-- listener(path) runs after every UpdateSetting (options panel or slash).
+function ns.OnSettingsChanged(listener)
+  settingsListeners[#settingsListeners + 1] = listener
+end
 
 -- Replace the whole settings table (SavedVariables point at the new copy).
 function ns.SetSettings(settings)
@@ -42,6 +54,9 @@ end
 
 function ns.UpdateSetting(path, value)
   ns.SetSettings(ns.Defaults.with(ns.db, path, value))
+  for _, listener in ipairs(settingsListeners) do
+    safeCall(listener, path)
+  end
 end
 
 function ns.RegisterModule(name, module)

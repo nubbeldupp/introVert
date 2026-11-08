@@ -312,7 +312,6 @@ local function setEnabled(command)
   for _, name in ipairs(Profile.ALL) do
     ns.UpdateSetting({ "quiet", "enabled", name }, command.value)
   end
-  Quiet.Refresh()
   ns.Print(command.value and "Quiet mode enabled." or "Quiet mode disabled.")
 end
 
@@ -339,6 +338,7 @@ end
 
 function Quiet.OnInit()
   registerChatFilters()
+  ns.OnSettingsChanged(Quiet.Refresh)
   for _, event in ipairs(REFRESH_EVENTS) do
     ns.On(event, Quiet.Refresh)
   end

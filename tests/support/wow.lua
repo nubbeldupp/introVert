@@ -12,6 +12,9 @@ local STUBBED_GLOBALS = {
   "RaidNotice_AddMessage", "RaidWarningFrame", "ChatTypeInfo",
   "ChatFrame_AddMessageEventFilter", "issecretvalue", "date",
   "LE_PARTY_CATEGORY_INSTANCE",
+  "Settings", "CreateSettingsListSectionHeaderInitializer",
+  "CreateSettingsButtonInitializer", "MinimalSliderWithSteppersMixin",
+  "StaticPopupDialogs", "StaticPopup_Show", "InCombatLockdown", "ACCEPT", "CANCEL",
 }
 
 local saved = {}
@@ -22,7 +25,8 @@ local function newEnv()
     timers = {}, filters = {}, errors = {}, buttons = {}, flashes = 0, leaves = 0,
     instance = { inInstance = false, instanceType = "none", difficultyID = 0 },
     isLFG = false, playerName = "Nubbel", role = "DAMAGER", now = 100,
-    secret = false,
+    secret = false, inCombat = false,
+    settings = { categories = {}, controls = {}, initializers = {}, byVariable = {} },
   }
 end
 
@@ -88,6 +92,101 @@ local function installGame(env)
   end
 end
 
+local function newCategory(env, name)
+  local category = { name = name, id = "category-" .. name }
+  function category:GetID() return self.id end
+  return category
+end
+
+local function addControl(env, kind, setting, options, tooltip)
+  local entry = { kind = kind, setting = setting, options = options, tooltip = tooltip }
+  env.settings.controls[#env.settings.controls + 1] = entry
+  return entry
+end
+
+local function newProxySetting(env, variable, varType, name, default, getValue, setValue)
+  local setting = { variable = variable, varType = varType, name = name, default = default }
+  function setting:GetValue() return getValue() end
+  function setting:SetValue(value) setValue(value) end
+  env.settings.byVariable[variable] = setting
+  return setting
+end
+
+local function installSettings(env)
+  local layout = {}
+  function layout:AddInitializer(init) table.insert(env.settings.initializers, init) end
+
+  _G.Settings = {
+    VarType = { Boolean = "boolean", String = "string", Number = "number" },
+    RegisterVerticalLayoutCategory = function(name) return newCategory(env, name), layout end,
+    RegisterAddOnCategory = function(category) table.insert(env.settings.categories, category) end,
+    RegisterProxySetting = function(_, variable, varType, name, default, getValue, setValue)
+      return newProxySetting(env, variable, varType, name, default, getValue, setValue)
+    end,
+    CreateCheckbox = function(_, setting, tooltip) return addControl(env, "checkbox", setting, nil, tooltip) end,
+    CreateDropdown = function(_, setting, options, tooltip) return addControl(env, "dropdown", setting, options, tooltip) end,
+    CreateSlider = function(_, setting, options, tooltip) return addControl(env, "slider", setting, options, tooltip) end,
+    CreateSliderOptions = function(min, max, step)
+      return { min = min, max = max, step = step, SetLabelFormatter = function() end }
+    end,
+    CreateControlTextContainer = function()
+      local data = {}
+      return {
+        Add = function(_, value, label) data[#data + 1] = { value = value, label = label } end,
+        GetData = function() return data end,
+      }
+    end,
+    OpenToCategory = function(id) env.settings.opened = id end,
+  }
+  _G.CreateSettingsListSectionHeaderInitializer = function(text) return { kind = "header", text = text } end
+  _G.CreateSettingsButtonInitializer = function(name, buttonText, onClick, tooltip)
+    return { kind = "button", name = name, buttonText = buttonText, onClick = onClick, tooltip = tooltip }
+  end
+  _G.MinimalSliderWithSteppersMixin = { Label = { Right = 1 } }
+  _G.InCombatLockdown = function() return env.inCombat end
+end
+
+local function newPopup()
+  local popup = { shown = true }
+  local editBox = { text = "" }
+  function editBox:SetText(text) self.text = text end
+  function editBox:GetText() return self.text end
+  function editBox:HighlightText() end
+  function editBox:GetParent() return popup end
+  function popup:Hide() self.shown = false end
+  popup.EditBox = editBox
+  popup.editBox = editBox
+  return popup
+end
+
+local function installPopups(env)
+  _G.ACCEPT, _G.CANCEL = "Accept", "Cancel"
+  _G.StaticPopupDialogs = {}
+  _G.StaticPopup_Show = function(which, textArg, _, data)
+    local dialog = _G.StaticPopupDialogs[which]
+    local popup = newPopup()
+    popup.which, popup.textArg, popup.data, popup.dialog = which, textArg, data, dialog
+    env.popup = popup
+    dialog.OnShow(popup, data)
+    return popup
+  end
+
+  function env.acceptPopup(text)
+    env.popup.editBox:SetText(text)
+    env.popup.dialog.OnAccept(env.popup, env.popup.data)
+    env.popup:Hide()
+  end
+
+  function env.enterPopup(text)
+    env.popup.editBox:SetText(text)
+    env.popup.dialog.EditBoxOnEnterPressed(env.popup.editBox, env.popup.data)
+  end
+
+  function env.escapePopup()
+    env.popup.dialog.EditBoxOnEscapePressed(env.popup.editBox, env.popup.data)
+  end
+end
+
 local function addHelpers(env)
   function env.fire(event, ...)
     local frame = assert(env.eventFrames[event], "no handler registered for " .. event)
@@ -138,6 +237,8 @@ function Wow.install()
   local env = newEnv()
   installUi(env)
   installGame(env)
+  installSettings(env)
+  installPopups(env)
   addHelpers(env)
   return env
 end

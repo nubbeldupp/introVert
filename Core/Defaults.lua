@@ -60,6 +60,18 @@ function Defaults.merge(defaults, saved)
   return result
 end
 
+-- Returns the value at `path` (list of keys), or nil if any step is missing.
+function Defaults.get(tbl, path)
+  local cursor = tbl
+  for _, key in ipairs(path) do
+    if type(cursor) ~= "table" then
+      return nil
+    end
+    cursor = cursor[key]
+  end
+  return cursor
+end
+
 -- Returns a copy of `tbl` with the value at `path` (list of keys) replaced.
 function Defaults.with(tbl, path, value)
   local copy = deepCopy(tbl)

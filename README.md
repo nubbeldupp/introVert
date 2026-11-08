@@ -20,10 +20,19 @@ off in premades, follower dungeons and the open world.
 - **Loud alarm** (Master channel + taskbar flash) for ready checks, role checks and queue pops.
 - **Hidden log**: read what was filtered with `/iv quiet log` (session only, never saved).
 
+### Settings
+
+All settings are in **Options → AddOns → introVert** (or type `/iv options`):
+toggles per profile, chat level dropdowns, boss-fight and wipe muting,
+greet / goodbye / alarm switches, and **Edit** buttons for the keyword,
+greeting and goodbye lists (comma separated). The panel and the slash
+commands share the same saved settings.
+
 ### Commands
 
 ```
 /iv help                  list all commands (also: /iv)
+/iv options               open the settings panel (also: /iv config)
 /iv quiet                 status
 /iv quiet on|off          enable/disable both profiles
 /iv quiet dungeon <level> set dungeon chat level

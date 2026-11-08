@@ -6,10 +6,13 @@
 ## SavedVariables: IntroVertDB
 
 Core/Defaults.lua
+Core/Lists.lua
 Core/Core.lua
+Core/Options.lua
 
 Modules/Quiet/Profile.lua
 Modules/Quiet/Filter.lua
 Modules/Quiet/Phrases.lua
 Modules/Quiet/Commands.lua
 Modules/Quiet/Quiet.lua
+Modules/Quiet/Options.lua

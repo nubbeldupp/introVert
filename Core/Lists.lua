@@ -1,0 +1,35 @@
+-- Converts between editable comma-separated text and string lists. Pure.
+local _, ns = ...
+
+local Lists = {}
+
+local SEPARATOR = ", "
+
+-- Chat messages longer than 255 bytes fail to send.
+Lists.MAX_ENTRY_LENGTH = 255
+Lists.MAX_ENTRIES = 20
+
+-- Splits on commas, trims each entry, drops blanks and case-insensitive
+-- duplicates (first spelling wins), and applies the size limits.
+-- Always returns a new list.
+function Lists.parse(text)
+  local result, seen = {}, {}
+  for part in (text or ""):gmatch("[^,]+") do
+    if #result >= Lists.MAX_ENTRIES then
+      break
+    end
+    local entry = part:match("^%s*(.-)%s*$"):sub(1, Lists.MAX_ENTRY_LENGTH)
+    local key = entry:lower()
+    if entry ~= "" and not seen[key] then
+      seen[key] = true
+      result[#result + 1] = entry
+    end
+  end
+  return result
+end
+
+function Lists.format(list)
+  return table.concat(list or {}, SEPARATOR)
+end
+
+ns.Lists = Lists

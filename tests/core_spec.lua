@@ -58,6 +58,28 @@ describe("Core", function()
     assert.is_false(IntroVertDB.quiet.greet)
   end)
 
+  it("notifies settings listeners after an update", function()
+    env.fire("ADDON_LOADED", "IntroVert")
+    local seen
+    ns.OnSettingsChanged(function(path) seen = path end)
+
+    ns.UpdateSetting({ "quiet", "greet" }, false)
+
+    assert.same({ "quiet", "greet" }, seen)
+  end)
+
+  it("keeps notifying listeners when one fails", function()
+    env.fire("ADDON_LOADED", "IntroVert")
+    local ran = false
+    ns.OnSettingsChanged(function() error("listener boom") end)
+    ns.OnSettingsChanged(function() ran = true end)
+
+    ns.UpdateSetting({ "quiet", "greet" }, false)
+
+    assert.is_true(ran)
+    assert.matches("listener boom", env.errors[1])
+  end)
+
   it("points to /iv help for an unknown slash command", function()
     env.slash("nope")
 
