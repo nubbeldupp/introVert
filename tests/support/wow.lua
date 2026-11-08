@@ -20,6 +20,7 @@ local STUBBED_GLOBALS = {
   "Enum", "C_WeeklyRewards", "C_Map", "C_AreaPoiInfo",
   "GetCategoryList", "GetCategoryInfo", "GetCategoryNumAchievements", "GetAchievementInfo",
   "GetAchievementNumCriteria", "GetAchievementCriteriaInfo",
+  "C_Scenario", "C_UIWidgetManager",
 }
 
 -- Unknown UI methods (SetBackdrop, SetMovable, ...) are accepted and ignored.
@@ -47,6 +48,7 @@ local function newEnv()
     mounts = {}, uncachedItems = {}, itemLoadRequests = {},
     vault = {}, zones = {}, delvePois = {},
     achievementCategories = {}, achievementScans = 0,
+    scenarioWidgetSet = 0, widgets = {}, widgetTiers = {},
     settings = { categories = {}, controls = {}, initializers = {}, byVariable = {} },
   }
 end
@@ -100,6 +102,26 @@ local function installGame(env)
       env.instance.difficultyName or "Difficulty", 10, 0, false, env.instance.instanceID
   end
   _G.Enum = { WeeklyRewardChestThresholdType = { World = 6 }, UIMapType = { Zone = 3 } }
+  -- Widget set ID is the 12th return of GetStepInfo (verified in the 12.1 client).
+  _G.C_Scenario = {
+    GetStepInfo = function()
+      return "Stage", "", 1, false, false, false, false, {}, 0, 0, 0, env.scenarioWidgetSet
+    end,
+  }
+  -- env.widgets: setID -> { widgetID, ... }; env.widgetTiers: widgetID -> tierText
+  _G.C_UIWidgetManager = {
+    GetAllWidgetsBySetID = function(setID)
+      local list = {}
+      for index, widgetID in ipairs(env.widgets[setID] or {}) do
+        list[index] = { widgetID = widgetID, widgetType = 0 }
+      end
+      return list
+    end,
+    GetScenarioHeaderDelvesWidgetVisualizationInfo = function(widgetID)
+      local tierText = env.widgetTiers[widgetID]
+      return tierText and { tierText = tierText } or nil
+    end,
+  }
   _G.C_WeeklyRewards = { GetActivities = function() return env.vault end }
   -- env.zones: { { mapID, name } }; env.delvePois: mapID -> { { poiID, name, atlasName } }
   _G.C_Map = { GetMapChildrenInfo = function() return env.zones end }

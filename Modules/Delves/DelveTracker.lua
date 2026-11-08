@@ -12,7 +12,12 @@ local BOUNTIFUL_ATLAS = "delves-bountiful"
 local UNAVAILABLE = { "  Not available on this client." }
 local HELP_LINES = { "/iv delves - Great Vault progress, bountiful delves and your delve history" }
 
+-- Position of widgetSetID in C_Scenario.GetStepInfo() (verified in 12.1).
+local SCENARIO_WIDGET_SET_INDEX = 12
+local TIER_CAPTURE_EVENTS = { "SCENARIO_UPDATE", "SCENARIO_CRITERIA_UPDATE", "PLAYER_ENTERING_WORLD" }
+
 local Tracker = {}
+local capturedTier
 
 local function safeSection(read, format)
   local ok, lines = pcall(function() return format(read()) end)
@@ -55,18 +60,58 @@ local function delveLines()
   )
 end
 
+-- The tier is not in GetInstanceInfo on 12.1 (difficulty name is just
+-- "Delves"); it lives in the delve header widget of the scenario tracker.
+-- Read it while the delve runs, since the widget may be gone at the end.
+local function readWidgetTier()
+  local widgetSetID = select(SCENARIO_WIDGET_SET_INDEX, C_Scenario.GetStepInfo())
+  if type(widgetSetID) ~= "number" or widgetSetID == 0 then
+    return nil
+  end
+  for _, widget in ipairs(C_UIWidgetManager.GetAllWidgetsBySetID(widgetSetID) or {}) do
+    local info = C_UIWidgetManager.GetScenarioHeaderDelvesWidgetVisualizationInfo(widget.widgetID)
+    local tier = info and Delves.parseTier(info.tierText)
+    if tier then
+      return tier
+    end
+  end
+  return nil
+end
+
+local function safeWidgetTier()
+  local ok, tier = pcall(readWidgetTier)
+  return ok and tier or nil
+end
+
+local function isInDelve()
+  local _, _, difficultyID = GetInstanceInfo()
+  return difficultyID == DELVE_DIFFICULTY
+end
+
+local function captureTier()
+  if not isInDelve() then
+    capturedTier = nil
+    return
+  end
+  capturedTier = safeWidgetTier() or capturedTier
+end
+
 local function onScenarioCompleted()
   local name, _, difficultyID, difficultyName = GetInstanceInfo()
   if difficultyID ~= DELVE_DIFFICULTY then
     return
   end
-  local tier = Delves.parseTier(difficultyName)
+  local tier = capturedTier or safeWidgetTier() or Delves.parseTier(difficultyName)
+  capturedTier = nil
   ns.UpdateSetting({ "delves" }, Delves.record(ns.db.delves, name, tier, time()))
   ns.Print(("Delve recorded: %s, tier %s."):format(name, tier or "?"))
 end
 
 function Tracker.OnInit()
   ns.On("SCENARIO_COMPLETED", onScenarioCompleted)
+  for _, event in ipairs(TIER_CAPTURE_EVENTS) do
+    ns.On(event, captureTier)
+  end
   ns.On("WEEKLY_REWARDS_UPDATE", function() ns.Window.Refresh() end)
 end
 

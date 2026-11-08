@@ -61,6 +61,64 @@ describe("Delve tracker", function()
 
       assert.is_true(env.printed("Delve recorded: Story Delve, tier ?."))
     end)
+
+    describe("tier from the delve tracker widget", function()
+      local function showTierWidget(tierText)
+        env.scenarioWidgetSet = 842
+        env.widgets = { [842] = { 6100, 6183 } }
+        env.widgetTiers = { [6183] = tierText }
+      end
+
+      local function hideTierWidget()
+        env.scenarioWidgetSet = 0
+      end
+
+      it("captures the tier during the delve and uses it on completion", function()
+        inDelve("The Darkway", "Delves")
+        showTierWidget("11")
+        env.fire("SCENARIO_UPDATE")
+        hideTierWidget()
+
+        env.fire("SCENARIO_COMPLETED")
+
+        assert.equal(11, IntroVertDB.delves["The Darkway"].bestTier)
+        assert.is_true(env.printed("Delve recorded: The Darkway, tier 11."))
+      end)
+
+      it("reads the widget at completion when nothing was captured", function()
+        inDelve("The Darkway", "Delves")
+        showTierWidget("Tier 9")
+
+        env.fire("SCENARIO_COMPLETED")
+
+        assert.equal(9, IntroVertDB.delves["The Darkway"].bestTier)
+      end)
+
+      it("forgets the captured tier after leaving the delve", function()
+        inDelve("The Darkway", "Delves")
+        showTierWidget("11")
+        env.fire("SCENARIO_CRITERIA_UPDATE")
+        env.instance = { inInstance = false, instanceType = "none", difficultyID = 0 }
+        env.fire("PLAYER_ENTERING_WORLD")
+        hideTierWidget()
+        inDelve("Other Delve", "Delves")
+
+        env.fire("SCENARIO_COMPLETED")
+
+        assert.is_true(env.printed("Delve recorded: Other Delve, tier ?."))
+      end)
+
+      it("falls back quietly when the widget API is missing", function()
+        _G.C_UIWidgetManager = nil
+        inDelve("Fungal Folly", "Tier 8")
+        env.fire("SCENARIO_UPDATE")
+
+        env.fire("SCENARIO_COMPLETED")
+
+        assert.equal(8, IntroVertDB.delves["Fungal Folly"].bestTier)
+        assert.equal(0, #env.errors)
+      end)
+    end)
   end)
 
   describe("Delves tab", function()
