@@ -283,7 +283,7 @@ describe("Quiet Groups", function()
       env.fire("LFG_COMPLETION_REWARD")
 
       assert.equal(1, #env.sent)
-      local button = env.buttons[1]
+      local button = env.buttonNamed("IntroVertLeaveButton")
       assert.is_true(button:IsShown())
 
       button:Click()
@@ -300,14 +300,14 @@ describe("Quiet Groups", function()
 
       leaveInstance()
 
-      assert.is_false(env.buttons[1]:IsShown())
+      assert.is_false(env.buttonNamed("IntroVertLeaveButton"):IsShown())
     end)
 
     it("does nothing on completion outside quiet groups", function()
       env.fire("LFG_COMPLETION_REWARD")
 
       assert.equal(0, #env.sent)
-      assert.equal(0, #env.buttons)
+      assert.is_nil(env.buttonNamed("IntroVertLeaveButton"))
     end)
   end)
 

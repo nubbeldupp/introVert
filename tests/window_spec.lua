@@ -47,7 +47,9 @@ describe("Window", function()
   describe("opening", function()
     it("is not created until first opened", function()
       assert.is_false(ns.Window.IsShown())
-      assert.equal(0, #env.buttons)
+      for _, button in ipairs(env.buttons) do
+        assert.is_nil(rawget(button, "text"), "no tab buttons before first open")
+      end
     end)
 
     it("/iv mounts opens the Mounts tab", function()

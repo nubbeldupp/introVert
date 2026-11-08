@@ -32,4 +32,15 @@ function Lists.format(list)
   return table.concat(list or {}, SEPARATOR)
 end
 
+-- Returns a new list with `item` appended, keeping at most `limit` entries
+-- (the oldest are dropped).
+function Lists.appendCapped(list, item, limit)
+  local result = {}
+  for index = math.max(1, #list - limit + 2), #list do
+    result[#result + 1] = list[index]
+  end
+  result[#result + 1] = item
+  return result
+end
+
 ns.Lists = Lists

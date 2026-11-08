@@ -16,6 +16,22 @@ function ns.Print(message)
   print(PRINT_PREFIX .. tostring(message))
 end
 
+-- True for Midnight "secret" values (unreadable chat during encounters).
+function ns.IsSecret(value)
+  return issecretvalue ~= nil and issecretvalue(value) == true
+end
+
+-- Registers a chat message filter; false when the client has no filter API.
+function ns.AddChatFilter(event, filter)
+  local add = ChatFrame_AddMessageEventFilter
+    or (ChatFrameUtil and ChatFrameUtil.AddMessageEventFilter)
+  if not add then
+    return false
+  end
+  add(event, filter)
+  return true
+end
+
 -- "Name-Realm" of the logged-in character; the key for per-character data.
 function ns.CharacterKey()
   return ("%s-%s"):format(UnitName("player"), GetRealmName())

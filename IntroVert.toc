@@ -4,12 +4,18 @@
 ## Author: nubbeldupp
 ## Version: 0.1.0
 ## SavedVariables: IntroVertDB
+## IconTexture: Interface\Icons\Ability_Rogue_Disguise
+## AddonCompartmentFunc: IntroVert_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: IntroVert_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: IntroVert_OnAddonCompartmentLeave
 
 Core/Defaults.lua
 Core/Lists.lua
 Core/Core.lua
 Core/Options.lua
 Core/Window.lua
+Core/Compartment.lua
+Core/MinimapButton.lua
 
 Modules/Quiet/Profile.lua
 Modules/Quiet/Filter.lua
@@ -17,6 +23,9 @@ Modules/Quiet/Phrases.lua
 Modules/Quiet/Commands.lua
 Modules/Quiet/Quiet.lua
 Modules/Quiet/Options.lua
+
+Modules/Shields/Spam.lua
+Modules/Shields/Shields.lua
 
 Modules/Raids/Lockouts.lua
 Modules/Raids/Raids.lua
@@ -32,3 +41,6 @@ Modules/Achievements/AchievementTracker.lua
 
 Modules/Finder/Finder.lua
 Modules/Finder/FinderTracker.lua
+
+Modules/Alts/Alts.lua
+Modules/Alts/AltTracker.lua

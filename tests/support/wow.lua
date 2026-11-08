@@ -21,6 +21,12 @@ local STUBBED_GLOBALS = {
   "GetCategoryList", "GetCategoryInfo", "GetCategoryNumAchievements", "GetAchievementInfo",
   "GetAchievementNumCriteria", "GetAchievementCriteriaInfo",
   "C_Scenario", "C_UIWidgetManager",
+  "DeclineGuild", "CancelDuel", "DeclineGroup", "C_PetBattles", "StaticPopup_Hide",
+  "C_FriendList", "C_BattleNet",
+  "GetAverageItemLevel", "UnitLevel", "GetMoney", "C_DateAndTime", "GameTooltip",
+  "IntroVert_OnAddonCompartmentClick", "IntroVert_OnAddonCompartmentEnter",
+  "IntroVert_OnAddonCompartmentLeave", "Minimap", "GetCursorPosition",
+  "UnitRace", "UnitClass",
 }
 
 -- Unknown UI methods (SetBackdrop, SetMovable, ...) are accepted and ignored.
@@ -49,6 +55,9 @@ local function newEnv()
     vault = {}, zones = {}, delvePois = {},
     achievementCategories = {}, achievementScans = 0,
     scenarioWidgetSet = 0, widgets = {}, widgetTiers = {},
+    declines = {}, hiddenPopups = {}, friends = {}, bnetFriends = {},
+    itemLevel = 0, money = 0, level = 1, secondsUntilReset = 86400, vaultRewards = false,
+    tooltip = { lines = {}, shown = false }, cursorX = 0, cursorY = 0,
     settings = { categories = {}, controls = {}, initializers = {}, byVariable = {} },
   }
 end
@@ -58,7 +67,8 @@ local function newFrame(env, kind)
   function frame:RegisterEvent(event) env.eventFrames[event] = self end
   function frame:SetScript(name, fn) self.scripts[name] = fn end
   function frame:SetSize() end
-  function frame:SetPoint() end
+  function frame:SetPoint(...) self.point = { ... } end
+  function frame:CreateTexture() return newFontString() end
   function frame:SetText(text) self.text = text end
   function frame:Show() self.shown = true end
   function frame:Hide() self.shown = false end
@@ -78,8 +88,17 @@ local function newFrame(env, kind)
 end
 
 local function installUi(env)
-  _G.CreateFrame = function(kind) return newFrame(env, kind) end
+  _G.CreateFrame = function(kind, name, parent)
+    local frame = newFrame(env, kind)
+    frame.name, frame.parent = name, parent
+    return frame
+  end
   _G.UIParent = newFrame(env, "Frame")
+  _G.Minimap = newFrame(env, "Frame")
+  function Minimap:GetCenter() return 100, 100 end
+  function Minimap:GetWidth() return 140 end
+  function Minimap:GetEffectiveScale() return 1 end
+  _G.GetCursorPosition = function() return env.cursorX, env.cursorY end
   _G.print = function(message) env.prints[#env.prints + 1] = message end
   _G.geterrorhandler = function()
     return function(err) env.errors[#env.errors + 1] = err end
@@ -101,7 +120,23 @@ local function installGame(env)
     return env.instance.name or "Test", env.instance.instanceType, env.instance.difficultyID,
       env.instance.difficultyName or "Difficulty", 10, 0, false, env.instance.instanceID
   end
-  _G.Enum = { WeeklyRewardChestThresholdType = { World = 6 }, UIMapType = { Zone = 3 } }
+  _G.Enum = {
+    WeeklyRewardChestThresholdType = { Activities = 1, Raid = 3, World = 6 },
+    UIMapType = { Zone = 3 },
+  }
+  _G.GetAverageItemLevel = function() return env.itemLevel, env.itemLevel, env.itemLevel end
+  _G.UnitLevel = function() return env.level end
+  _G.UnitRace = function() return "Dwarf", "Dwarf", 3 end
+  _G.UnitClass = function() return "Rogue", "ROGUE", 4 end
+  _G.GetMoney = function() return env.money end
+  _G.C_DateAndTime = { GetSecondsUntilWeeklyReset = function() return env.secondsUntilReset end }
+  _G.GameTooltip = {
+    SetOwner = function() end,
+    SetText = function(_, text) env.tooltip.lines = { text } end,
+    AddLine = function(_, text) table.insert(env.tooltip.lines, text) end,
+    Show = function() env.tooltip.shown = true end,
+    Hide = function() env.tooltip.shown = false end,
+  }
   -- Widget set ID is the 12th return of GetStepInfo (verified in the 12.1 client).
   _G.C_Scenario = {
     GetStepInfo = function()
@@ -122,7 +157,10 @@ local function installGame(env)
       return tierText and { tierText = tierText } or nil
     end,
   }
-  _G.C_WeeklyRewards = { GetActivities = function() return env.vault end }
+  _G.C_WeeklyRewards = {
+    GetActivities = function() return env.vault end,
+    HasAvailableRewards = function() return env.vaultRewards end,
+  }
   -- env.zones: { { mapID, name } }; env.delvePois: mapID -> { { poiID, name, atlasName } }
   _G.C_Map = { GetMapChildrenInfo = function() return env.zones end }
   _G.C_AreaPoiInfo = {
@@ -166,7 +204,21 @@ local function installGame(env)
   _G.GetTime = function() return env.now end
   _G.issecretvalue = function() return env.secret end
   _G.C_ChatInfo = {
-    SendChatMessage = function(text, channel) env.sent[#env.sent + 1] = { text = text, channel = channel } end,
+    SendChatMessage = function(text, channel, _, target)
+      env.sent[#env.sent + 1] = { text = text, channel = channel, target = target }
+    end,
+  }
+  local function countDecline(kind)
+    return function() env.declines[kind] = (env.declines[kind] or 0) + 1 end
+  end
+  _G.DeclineGuild = countDecline("guild")
+  _G.CancelDuel = countDecline("duel")
+  _G.DeclineGroup = countDecline("group")
+  _G.C_PetBattles = { CancelPVPDuel = countDecline("petDuel") }
+  _G.StaticPopup_Hide = function(which) env.hiddenPopups[#env.hiddenPopups + 1] = which end
+  _G.C_FriendList = { IsFriend = function(guid) return env.friends[guid] == true end }
+  _G.C_BattleNet = {
+    GetAccountInfoByGUID = function(guid) return env.bnetFriends[guid] and {} or nil end,
   }
   _G.C_Timer = { After = function(_, fn) env.timers[#env.timers + 1] = fn end }
   _G.LE_PARTY_CATEGORY_INSTANCE = 2
@@ -362,6 +414,16 @@ local function addHelpers(env)
 
   function env.lastPrint()
     return env.prints[#env.prints]
+  end
+
+  -- The created Button frame with this global name, or nil.
+  function env.buttonNamed(name)
+    for _, button in ipairs(env.buttons) do
+      if button.name == name then
+        return button
+      end
+    end
+    return nil
   end
 
   -- True when any printed line contains `text` (plain match, not a pattern).

@@ -56,22 +56,11 @@ local function setState(patch)
   state = nextState
 end
 
-local function appendCapped(list, item, limit)
-  local result = {}
-  for index = math.max(1, #list - limit + 2), #list do
-    result[#result + 1] = list[index]
-  end
-  result[#result + 1] = item
-  return result
-end
-
 local function settings()
   return ns.db.quiet
 end
 
-local function isSecret(value)
-  return issecretvalue ~= nil and issecretvalue(value) == true
-end
+local isSecret = ns.IsSecret
 
 local function sendInstanceChat(text)
   if not text then
@@ -183,7 +172,7 @@ end
 
 local function recordHidden(author, text)
   setState({ hiddenCount = state.hiddenCount + 1 })
-  hiddenLog = appendCapped(hiddenLog, { time = date("%H:%M:%S"), author = author, text = text }, LOG_LIMIT)
+  hiddenLog = ns.Lists.appendCapped(hiddenLog, { time = date("%H:%M:%S"), author = author, text = text }, LOG_LIMIT)
 end
 
 local function buildMessage(event, text, author)
@@ -220,14 +209,11 @@ local function chatFilter(_, event, text, author, ...)
 end
 
 local function registerChatFilters()
-  local addFilter = ChatFrame_AddMessageEventFilter
-    or (ChatFrameUtil and ChatFrameUtil.AddMessageEventFilter)
-  if not addFilter then
-    ns.Print("Chat filter API not found; Quiet chat filtering is disabled.")
-    return
-  end
   for _, event in ipairs(FILTERED_EVENTS) do
-    addFilter(event, chatFilter)
+    if not ns.AddChatFilter(event, chatFilter) then
+      ns.Print("Chat filter API not found; Quiet chat filtering is disabled.")
+      return
+    end
   end
 end
 

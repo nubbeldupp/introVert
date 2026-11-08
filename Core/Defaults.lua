@@ -29,6 +29,22 @@ Defaults.values = {
   finder = {
     minutes = 60,
   },
+  minimap = {
+    show = true,
+    angle = 225,
+  },
+  -- Account-wide, keyed by "Name-Realm":
+  -- { level, itemLevel, gold, vault = { raid, dungeon, world }, hasRewards, updatedAt }.
+  alts = {},
+  shields = {
+    guildInvites = true,
+    duels = true,
+    petDuels = true,
+    groupInvites = true,
+    spam = true,
+    reply = false,
+    replies = { "Thanks, but I play solo!" },
+  },
 }
 
 -- A table counts as a list when it is empty or has a sequence part.

@@ -84,6 +84,7 @@ local function forget(name)
     return
   end
   ns.UpdateSetting({ "characters", key }, nil)
+  ns.UpdateSetting({ "alts", key }, nil)
   ns.Print(("Forgot %s."):format(key))
 end
 

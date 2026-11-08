@@ -48,9 +48,16 @@ describe("Options panel", function()
       assert.equal("introVert", env.settings.categories[1].name)
     end)
 
-    it("adds a Quiet Groups section header", function()
-      assert.equal("header", env.settings.initializers[1].kind)
-      assert.equal("Quiet Groups", env.settings.initializers[1].text)
+    it("adds General and Quiet Groups section headers, General first", function()
+      local headers = {}
+      for _, init in ipairs(env.settings.initializers) do
+        if init.kind == "header" then
+          headers[#headers + 1] = init.text
+        end
+      end
+
+      assert.equal("General", headers[1])
+      assert.equal("Quiet Groups", headers[2])
     end)
 
     it("creates a control for every Quiet setting", function()

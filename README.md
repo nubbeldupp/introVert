@@ -20,6 +20,39 @@ off in premades, follower dungeons and the open world.
 - **Loud alarm** (Master channel + taskbar flash) for ready checks, role checks and queue pops.
 - **Hidden log**: read what was filtered with `/iv quiet log` (session only, never saved).
 
+### Do Not Disturb
+
+Declines automatically (each switchable in Options → AddOns → introVert):
+guild invites, duels, pet battle duels and group invites from strangers
+(friends and Battle.net friends still get through). The popup closes and you
+get one short chat line. Optional polite whisper reply, off by default.
+
+**Recruitment spam filter**: hides guild recruitment in General, Trade,
+Services, say/yell and whispers, in English and German ("recruit",
+"rekrut", or guild/Gilde together with join, members, sucht, Mitglieder, ...).
+
+```
+/iv dnd             what was declined and hidden this session
+/iv dnd log         the last 20 entries
+/iv dnd on|off      all shields at once
+```
+
+### Minimap button
+
+A round introVert button on the minimap edge (no extra library): **drag** it
+along the edge to move it, **left-click** opens or closes the window,
+**right-click** opens the options. Hide or show it with `/iv minimap` or the
+"Show minimap button" switch in the options. introVert is also listed in the
+game's own addon menu on the minimap when that menu is visible.
+
+### Alts tab
+
+`/iv alts` lists every character you logged in on: level, item level, gold,
+Great Vault (finished slots per row: raid, dungeons, world), unclaimed vault
+rewards and when you last saw them, plus total gold. A vault recorded before
+the last weekly reset shows "reset since last seen". `/iv raids forget
+Name-Realm` removes a character here too.
+
 ### Window
 
 `/iv window` opens the introVert window: movable (drag it), closes with
@@ -118,6 +151,8 @@ commands share the same saved settings.
 /iv quiet lfr <level>     set LFR chat level
 /iv quiet log             show the last 20 hidden lines
 ```
+
+Ideas for later live in [docs/IDEAS.md](docs/IDEAS.md).
 
 ## Install
 

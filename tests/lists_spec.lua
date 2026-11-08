@@ -44,6 +44,19 @@ describe("Lists", function()
     end)
   end)
 
+  describe("appendCapped", function()
+    it("appends without changing the input", function()
+      local list = { "a" }
+
+      assert.same({ "a", "b" }, Lists.appendCapped(list, "b", 5))
+      assert.same({ "a" }, list)
+    end)
+
+    it("drops the oldest entries past the limit", function()
+      assert.same({ "b", "c", "d" }, Lists.appendCapped({ "a", "b", "c" }, "d", 3))
+    end)
+  end)
+
   describe("format", function()
     it("joins entries with comma and space", function()
       assert.equal("wait, afk", Lists.format({ "wait", "afk" }))

@@ -4,7 +4,8 @@
 local _, ns = ...
 
 local WINDOW_NAME = "IntroVertWindow"
-local WIDTH = 540
+-- Wide enough for six tab buttons in one row.
+local WIDTH = 640
 local HEIGHT = 440
 local PADDING = 16
 local TITLE_OFFSET_Y = -16
