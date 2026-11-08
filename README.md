@@ -70,6 +70,17 @@ and "collected" come from your mount journal; the addon only stores item IDs.
 Each section reads the game API defensively: if an API changed, that section
 shows "Not available on this client" instead of breaking the window.
 
+### Solo Achievement Hunter
+
+`/iv achievements` (or `/iv ach`) opens the **Achievements** tab:
+
+- **Almost done (75%+)**: closest first, up to 25.
+- **With rewards**: unfinished achievements that give a title, mount, pet, …
+
+Leaves out PvP, Feats of Strength, Legacy, guild and completed achievements.
+Dungeons & Raids stay in (old raids are soloable) but are tagged `[group]`.
+The scan runs when the tab opens and is cached until your progress changes.
+
 ### Settings
 
 All settings are in **Options → AddOns → introVert** (or type `/iv options`):

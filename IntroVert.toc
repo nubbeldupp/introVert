@@ -26,3 +26,6 @@ Modules/Raids/MountTracker.lua
 
 Modules/Delves/Delves.lua
 Modules/Delves/DelveTracker.lua
+
+Modules/Achievements/Achievements.lua
+Modules/Achievements/AchievementTracker.lua

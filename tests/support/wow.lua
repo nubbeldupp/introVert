@@ -18,6 +18,8 @@ local STUBBED_GLOBALS = {
   "GetNumSavedInstances", "GetSavedInstanceInfo", "RequestRaidInfo", "GetRealmName", "time",
   "C_MountJournal", "C_Item", "UISpecialFrames",
   "Enum", "C_WeeklyRewards", "C_Map", "C_AreaPoiInfo",
+  "GetCategoryList", "GetCategoryInfo", "GetCategoryNumAchievements", "GetAchievementInfo",
+  "GetAchievementNumCriteria", "GetAchievementCriteriaInfo",
 }
 
 -- Unknown UI methods (SetBackdrop, SetMovable, ...) are accepted and ignored.
@@ -44,6 +46,7 @@ local function newEnv()
     realm = "Silvermoon", time = 1000000, savedInstances = {}, raidInfoRequests = 0,
     mounts = {}, uncachedItems = {}, itemLoadRequests = {},
     vault = {}, zones = {}, delvePois = {},
+    achievementCategories = {}, achievementScans = 0,
     settings = { categories = {}, controls = {}, initializers = {}, byVariable = {} },
   }
 end
@@ -262,6 +265,51 @@ local function installPopups(env)
   end
 end
 
+-- env.achievementCategories: { { id, title, parent, achievements = {
+--   { id, name, points, completed, reward, isGuild, criteria = { { completed, quantity, required } } } } } }
+local function installAchievements(env)
+  local function category(id)
+    for _, entry in ipairs(env.achievementCategories) do
+      if entry.id == id then
+        return entry
+      end
+    end
+  end
+  local function achievementByID(id)
+    for _, entry in ipairs(env.achievementCategories) do
+      for _, achievement in ipairs(entry.achievements) do
+        if achievement.id == id then
+          return achievement
+        end
+      end
+    end
+  end
+
+  _G.GetCategoryList = function()
+    env.achievementScans = env.achievementScans + 1
+    local ids = {}
+    for index, entry in ipairs(env.achievementCategories) do
+      ids[index] = entry.id
+    end
+    return ids
+  end
+  _G.GetCategoryInfo = function(id)
+    local entry = category(id)
+    return entry.title, entry.parent, 0
+  end
+  _G.GetCategoryNumAchievements = function(id) return #category(id).achievements end
+  -- Same return order as the real API (15 values).
+  _G.GetAchievementInfo = function(categoryID, index)
+    local a = category(categoryID).achievements[index]
+    return a.id, a.name, a.points, a.completed, 0, 0, 0, "", 0, 0, a.reward, a.isGuild, false, nil, false
+  end
+  _G.GetAchievementNumCriteria = function(id) return #achievementByID(id).criteria end
+  _G.GetAchievementCriteriaInfo = function(id, index)
+    local c = achievementByID(id).criteria[index]
+    return "criterion", 0, c.completed, c.quantity, c.required
+  end
+end
+
 local function addHelpers(env)
   function env.fire(event, ...)
     local frame = assert(env.eventFrames[event], "no handler registered for " .. event)
@@ -314,6 +362,7 @@ function Wow.install()
   installGame(env)
   installSettings(env)
   installPopups(env)
+  installAchievements(env)
   addHelpers(env)
   return env
 end
