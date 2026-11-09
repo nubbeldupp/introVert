@@ -2,9 +2,11 @@
 
 World of Warcraft (Retail) addon for players who prefer to play alone.
 
+**Current version: 0.5.0** · [Changelog](#changelog) · MIT License
+
 ## Modules
 
-### Quiet Groups (v0.1)
+### Quiet Groups
 
 Turns on automatically in matchmade dungeons (LFD) and Raid Finder (LFR),
 off in premades, follower dungeons and the open world.
@@ -153,6 +155,27 @@ commands share the same saved settings.
 ```
 
 Ideas for later live in [docs/IDEAS.md](docs/IDEAS.md).
+
+## Changelog
+
+### 0.5.0 (2026-11-09): first public release
+
+All steps taken to get here:
+
+1. Quiet Groups: LFD/LFR chat filter, greet and farewell, Leave button, ready alarm, encounter mute
+2. Options panel under Options → AddOns
+3. Raid Farm Planner, part 1: lockouts across characters
+4. Raid Farm Planner, part 2: missing raid mounts and attempts
+5. introVert window with Raids and Mounts tabs
+6. Delve Companion tab
+7. Solo Achievement Hunter tab
+8. Solo Content Finder, `/iv mounts set` and GitHub CI (busted on Lua 5.1 and 5.4)
+9. Fix: delve tier read from the scenario header widget
+10. Labyrinth of Kindo'jan tracked by chambers
+11. Do Not Disturb, Alts tab and minimap button
+12. Release prep: MIT license, changelog, version 0.5.0
+
+Full details per module: [CHANGELOG.md](CHANGELOG.md).
 
 ## Install
 

@@ -4,3 +4,6 @@ luacov.report.out
 
 # macOS
 .DS_Store
+
+# Release builds
+dist/
