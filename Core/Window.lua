@@ -1,6 +1,8 @@
 -- The introVert window: one movable, scrollable frame with a tab per view.
 -- Modules register views with Window.AddView(key, title, provider), where
--- provider() returns the lines to show. Created lazily on first open.
+-- provider(isExpanded) returns the lines to show. Rows wrapped in
+-- Window.ToggleLink(key, text) open and close on click; isExpanded(key) tells
+-- the provider which are open. Created lazily on first open.
 local _, ns = ...
 
 local WINDOW_NAME = "IntroVertWindow"
@@ -19,6 +21,7 @@ local TAB_GAP = 4
 local HEADER_COLOR = "|cffffd100"
 local COLOR_END = "|r"
 local DETAIL_PREFIX = "  "
+local TOGGLE_LINK_PREFIX = "introvert:toggle:"
 local HELP_LINES = { "/iv window - show or hide the introVert window" }
 
 local BACKDROP = {
@@ -36,17 +39,22 @@ local frame, content, tabButtons, titleText
 local currentKey
 
 function Window.AddView(key, title, provider)
-  views[#views + 1] = { key = key, title = title, provider = provider }
+  views[#views + 1] = { key = key, title = title, provider = provider, expanded = {} }
 end
 
--- Header lines in gold, indented detail lines plain.
+-- Header lines in gold; indented detail lines and empty spacers plain.
 function Window.Format(lines)
   local formatted = {}
   for index, line in ipairs(lines) do
-    local isDetail = line:sub(1, #DETAIL_PREFIX) == DETAIL_PREFIX
-    formatted[index] = isDetail and line or (HEADER_COLOR .. line .. COLOR_END)
+    local isPlain = line == "" or line:sub(1, #DETAIL_PREFIX) == DETAIL_PREFIX
+    formatted[index] = isPlain and line or (HEADER_COLOR .. line .. COLOR_END)
   end
   return table.concat(formatted, "\n")
+end
+
+-- Clickable text that opens or closes row `key` of the current view.
+function Window.ToggleLink(key, text)
+  return ("|H%s%s|h%s|h"):format(TOGGLE_LINK_PREFIX, key, text)
 end
 
 local function findView(key)
@@ -64,7 +72,10 @@ local function render()
     return
   end
   titleText:SetText(TITLE .. " - " .. view.title)
-  content.text:SetText(Window.Format(view.provider()))
+  local function isExpanded(rowKey)
+    return view.expanded[rowKey] == true
+  end
+  content.text:SetText(Window.Format(view.provider(isExpanded)))
   content:SetHeight(content.text:GetStringHeight() + PADDING)
   -- Every tab stays clickable; the open one glows.
   for key, button in pairs(tabButtons) do
@@ -123,6 +134,8 @@ local function createContent(parent)
 
   local child = CreateFrame("Frame", nil, scroll)
   child:SetSize(CONTENT_WIDTH, 1)
+  child:SetHyperlinksEnabled(true)
+  child:SetScript("OnHyperlinkClick", function(_, link) Window.ClickLink(link) end)
   scroll:SetScrollChild(child)
 
   local text = child:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
@@ -175,6 +188,24 @@ function Window.Refresh()
   if Window.IsShown() then
     render()
   end
+end
+
+-- Handles a click on a link in the open view; foreign links are ignored.
+-- Opened rows stay open per view for the session.
+function Window.ClickLink(link)
+  local rowKey = Window.IsShown() and link:match("^" .. TOGGLE_LINK_PREFIX .. "(.+)$")
+  local view = rowKey and findView(currentKey)
+  if not view then
+    return
+  end
+  -- Replace the table instead of mutating it.
+  local expanded = {}
+  for key, isOpen in pairs(view.expanded) do
+    expanded[key] = isOpen
+  end
+  expanded[rowKey] = not view.expanded[rowKey] or nil
+  view.expanded = expanded
+  render()
 end
 
 function Window.CurrentView()

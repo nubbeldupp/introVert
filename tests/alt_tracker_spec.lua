@@ -32,7 +32,7 @@ describe("Alts tab", function()
     env.fire("PLAYER_ENTERING_WORLD")
 
     assert.same({
-      level = 90, race = "Dwarf", class = "Rogue", itemLevel = 712, gold = 123456789, hasRewards = false,
+      level = 90, race = "Dwarf", class = "Rogue", classFile = "ROGUE", itemLevel = 712, gold = 123456789, hasRewards = false,
       vault = { raid = 1, dungeon = 0, world = 1 }, updatedAt = env.time,
     }, IntroVertDB.alts["Nubbel-Silvermoon"])
   end)

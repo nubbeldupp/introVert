@@ -1,8 +1,15 @@
 -- Raid mount logic: missing mounts, attempt matching, display lines.
--- Pure: the mount lookup and current time are passed in.
+-- Pure: the mount lookup and current time are passed in; durations reuse
+-- ns.RaidLockouts.formatDuration.
 local _, ns = ...
 
 local Mounts = {}
+
+local INDENT = "  "
+local CHARACTER_INDENT = "    "
+local CLOSED_MARKER = "[+] "
+local OPEN_MARKER = "[-] "
+local HINT = "Click a mount to show or hide your characters."
 
 local function contains(list, value)
   for _, item in ipairs(list) do
@@ -91,40 +98,132 @@ function Mounts.attemptItems(data, instanceID, difficultyID, encounterName)
   return items
 end
 
-local function isLocked(lockouts, instanceID, now)
+local function activeLockout(lockouts, instanceID, now)
   for _, lockout in ipairs(lockouts or {}) do
     if lockout.instanceID == instanceID and lockout.expiresAt > now then
-      return true
+      return lockout
     end
   end
-  return false
+  return nil
 end
 
-function Mounts.freeCharacters(characters, instanceID, now)
-  local free = {}
+-- Every character with its active lockout for the raid, sorted by name:
+-- { { name, expiresAt } }, expiresAt nil when the character is free.
+function Mounts.characterStatus(characters, instanceID, now)
+  local statuses = {}
   for _, name in ipairs(sortedKeys(characters)) do
-    if not isLocked(characters[name].lockouts, instanceID, now) then
-      free[#free + 1] = name
+    local lockout = activeLockout(characters[name].lockouts, instanceID, now)
+    statuses[#statuses + 1] = { name = name, expiresAt = lockout and lockout.expiresAt }
+  end
+  return statuses
+end
+
+-- "Name-Realm" -> "Name" on the current realm; other realms stay visible.
+function Mounts.shortName(key, realm)
+  local name, keyRealm = key:match("^([^-]+)-(.+)$")
+  if name and keyRealm == realm then
+    return name
+  end
+  return key
+end
+
+local function countFree(statuses)
+  local free = 0
+  for _, status in ipairs(statuses) do
+    if not status.expiresAt then
+      free = free + 1
     end
   end
   return free
 end
 
-local function mountLine(mount, count)
-  local note = mount.note and (" (" .. mount.note .. ")") or ""
-  local unit = count == 1 and "attempt" or "attempts"
-  return ("  %s - %s%s, %d %s"):format(mount.mountName, mount.boss, note, count, unit)
+-- One-line status: how many characters can still kill the boss this week.
+-- Counts only, so it stays short with many alts.
+local function summary(statuses)
+  local total = #statuses
+  local free = countFree(statuses)
+  if total == 0 then
+    return "no characters recorded yet"
+  end
+  if total == 1 then
+    return free == 1 and "free" or "locked until reset"
+  end
+  if free == total then
+    return ("free on all %d characters"):format(total)
+  end
+  return ("free on %d of %d characters"):format(free, total)
 end
 
-function Mounts.lines(resolved, attempts, characters, now)
-  local lines = {}
-  for _, raid in ipairs(resolved.raids) do
-    local free = Mounts.freeCharacters(characters, raid.instanceID, now)
-    local freeText = #free > 0 and table.concat(free, ", ") or "none this week"
-    lines[#lines + 1] = ("%s - free: %s"):format(raid.name, freeText)
-    for _, mount in ipairs(raid.missing) do
-      lines[#lines + 1] = mountLine(mount, (attempts or {})[mount.itemID] or 0)
+local function coloredName(status, context)
+  local name = Mounts.shortName(status.name, context.realm)
+  local color = context.colorOf(status.name)
+  return color and ("|c%s%s|r"):format(color, name) or name
+end
+
+local function characterLine(status, context)
+  local state = "free"
+  if status.expiresAt then
+    state = "locked, resets in " .. ns.RaidLockouts.formatDuration(status.expiresAt - context.now)
+  end
+  return ("%s%s - %s"):format(CHARACTER_INDENT, coloredName(status, context), state)
+end
+
+local function mountTitle(mount, count)
+  local note = mount.note and (" (" .. mount.note .. ")") or ""
+  local unit = count == 1 and "attempt" or "attempts"
+  return ("%s - %s%s, %d %s"):format(mount.mountName, mount.boss, note, count, unit)
+end
+
+local function plainLink(_, text)
+  return text
+end
+
+local function neverExpanded()
+  return false
+end
+
+local function noColor()
+  return nil
+end
+
+-- A clickable mount row, its status line, and the characters when opened.
+local function appendMount(lines, raid, mount, context)
+  local key = tostring(mount.itemID)
+  local isOpen = context.isExpanded(key)
+  local marker = isOpen and OPEN_MARKER or CLOSED_MARKER
+  local statuses = Mounts.characterStatus(context.characters, raid.instanceID, context.now)
+  local count = context.attempts[mount.itemID] or 0
+  lines[#lines + 1] = ""
+  lines[#lines + 1] = context.link(key, marker .. mountTitle(mount, count))
+  lines[#lines + 1] = ("%s%s: %s"):format(INDENT, raid.name, summary(statuses))
+  if isOpen then
+    for _, status in ipairs(statuses) do
+      lines[#lines + 1] = characterLine(status, context)
     end
+  end
+end
+
+-- options: { realm, link(key, text), isExpanded(key), colorOf(characterKey) }
+-- where colorOf returns an "aarrggbb" class colour or nil. Without options
+-- every row is plain, collapsed and uncoloured.
+function Mounts.lines(resolved, attempts, characters, now, options)
+  local settings = options or {}
+  local context = {
+    attempts = attempts or {}, characters = characters, now = now, realm = settings.realm,
+    link = settings.link or plainLink, isExpanded = settings.isExpanded or neverExpanded,
+    colorOf = settings.colorOf or noColor,
+  }
+  local lines = {}
+  if #resolved.raids > 0 then
+    lines[1] = HINT
+  end
+  for _, raid in ipairs(resolved.raids) do
+    for _, mount in ipairs(raid.missing) do
+      appendMount(lines, raid, mount, context)
+    end
+  end
+  if #lines > 0 then
+    lines[#lines + 1] = ""
   end
   lines[#lines + 1] = ("Collected %d of %d tracked raid mounts."):format(resolved.collected, resolved.known)
   if (resolved.pending or 0) > 0 then

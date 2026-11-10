@@ -3,6 +3,14 @@
 All notable changes to introVert are listed here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] - 2026-11-10
+
+### Changed
+- Mounts tab redesigned for readability: one row per missing mount with a short status line, e.g. "Karazhan: free on all 5 characters" or "free on 3 of 5 characters"
+- Click a mount to open or close its character list, with reset times for locked characters
+- Character names in class colours; the realm is hidden for characters on your current realm
+- Alts now also store the class token, so colours work in any client language
+
 ## [0.5.0] - 2026-11-09
 
 First public release.
@@ -64,4 +72,5 @@ First public release.
 - Minimap button (left-click: window, right-click: options) and Addon Compartment entry
 - `/iv help` lists all commands
 
+[0.6.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.6.0
 [0.5.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.5.0

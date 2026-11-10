@@ -30,11 +30,12 @@ end
 local function snapshot()
   local _, equipped = GetAverageItemLevel()
   local race = UnitRace("player")
-  local class = UnitClass("player")
+  local class, classFile = UnitClass("player")
   return {
     level = UnitLevel("player"),
     race = race,
     class = class,
+    classFile = classFile,
     itemLevel = math.floor(equipped or 0),
     gold = GetMoney(),
     vault = safely(readVault, nil),

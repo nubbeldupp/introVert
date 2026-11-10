@@ -42,6 +42,52 @@ describe("Window", function()
     it("returns an empty string for no lines", function()
       assert.equal("", ns.Window.Format({}))
     end)
+
+    it("keeps empty spacer lines uncoloured", function()
+      assert.equal("|cffffd100A|r\n\n|cffffd100B|r", ns.Window.Format({ "A", "", "B" }))
+    end)
+  end)
+
+  describe("toggle links", function()
+    it("wraps text in a clickable introVert link", function()
+      assert.equal("|Hintrovert:toggle:50818|h[+] Invincible|h", ns.Window.ToggleLink("50818", "[+] Invincible"))
+    end)
+
+    it("opens and closes a mount's characters on click", function()
+      env.slash("mounts")
+      assert.is_false(windowHas("    Nubbel - free"))
+
+      ns.Window.ClickLink("introvert:toggle:50818")
+      assert.is_true(windowHas("[-] Invincible"))
+      assert.is_true(windowHas("    Nubbel - free"))
+
+      ns.Window.ClickLink("introvert:toggle:50818")
+      assert.is_true(windowHas("[+] Invincible"))
+      assert.is_false(windowHas("    Nubbel - free"))
+    end)
+
+    it("keeps opened rows per tab", function()
+      env.slash("mounts")
+      ns.Window.ClickLink("introvert:toggle:50818")
+
+      env.slash("raids")
+      env.slash("mounts")
+
+      assert.is_true(windowHas("    Nubbel - free"))
+    end)
+
+    it("ignores links from other addons and while closed", function()
+      env.slash("mounts")
+      local before = ns.Window.GetText()
+
+      ns.Window.ClickLink("item:50818")
+      assert.equal(before, ns.Window.GetText())
+
+      env.slash("window")
+      ns.Window.ClickLink("introvert:toggle:50818")
+      env.slash("window")
+      assert.is_false(windowHas("    Nubbel - free"))
+    end)
   end)
 
   describe("opening", function()

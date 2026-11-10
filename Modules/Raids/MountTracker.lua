@@ -80,8 +80,33 @@ local function resolve()
   return Mounts.resolve(ns.RaidMountData, lookupMount)
 end
 
-local function mountLines()
-  return Mounts.lines(resolve(), attempts(), ns.db.characters, time())
+-- Alts recorded before classFile was stored only have the localized class
+-- name; map it back to the class token.
+local function classFileFromName(className)
+  for classFile, localized in pairs(LOCALIZED_CLASS_NAMES_MALE or {}) do
+    if localized == className then
+      return classFile
+    end
+  end
+  return nil
+end
+
+-- "aarrggbb" class colour of a recorded character, nil when unknown.
+local function classColor(characterKey)
+  local alt = (ns.db.alts or {})[characterKey]
+  if not alt then
+    return nil
+  end
+  local classFile = alt.classFile or classFileFromName(alt.class)
+  local color = classFile and (RAID_CLASS_COLORS or {})[classFile]
+  return color and color.colorStr
+end
+
+local function mountLines(isExpanded)
+  local options = {
+    realm = GetRealmName(), link = ns.Window.ToggleLink, isExpanded = isExpanded, colorOf = classColor,
+  }
+  return Mounts.lines(resolve(), attempts(), ns.db.characters, time(), options)
 end
 
 local function printCheck()

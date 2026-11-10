@@ -2,7 +2,7 @@
 
 World of Warcraft (Retail) addon for players who prefer to play alone.
 
-**Current version: 0.5.0** · [Changelog](#changelog) · MIT License
+**Current version: 0.6.0** · [Changelog](#changelog) · MIT License
 
 ## Modules
 
@@ -87,6 +87,11 @@ and "collected" come from your mount journal; the addon only stores item IDs.
 /iv mounts set invincible 12    enter attempts from before you had introVert
 ```
 
+- The Mounts tab shows one row per missing mount with a short status, e.g.
+  "Karazhan: free on all 5 characters" or "free on 4 of 5 characters".
+  Click a mount to open the list of your characters with their reset times;
+  click again to close it. Names are shown in class colours; characters on
+  your current realm are shown without the realm name.
 - An attempt is counted when you kill the dropping boss on an eligible
   difficulty while the mount is still uncollected ("Attempt 12 for Invincible.").
 - Boss matching uses English encounter names, so attempt counting needs an
@@ -157,6 +162,12 @@ commands share the same saved settings.
 Ideas for later live in [docs/IDEAS.md](docs/IDEAS.md).
 
 ## Changelog
+
+### 0.6.0 (2026-11-10): readable Mounts tab
+
+13. Mounts tab: one clickable row per mount with a short "free on x of y
+    characters" status; click to show your characters in class colours with
+    their reset times
 
 ### 0.5.0 (2026-11-09): first public release
 

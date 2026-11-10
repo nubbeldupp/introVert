@@ -26,7 +26,7 @@ local STUBBED_GLOBALS = {
   "GetAverageItemLevel", "UnitLevel", "GetMoney", "C_DateAndTime", "GameTooltip",
   "IntroVert_OnAddonCompartmentClick", "IntroVert_OnAddonCompartmentEnter",
   "IntroVert_OnAddonCompartmentLeave", "Minimap", "GetCursorPosition",
-  "UnitRace", "UnitClass",
+  "UnitRace", "UnitClass", "RAID_CLASS_COLORS", "LOCALIZED_CLASS_NAMES_MALE",
 }
 
 -- Unknown UI methods (SetBackdrop, SetMovable, ...) are accepted and ignored.
@@ -128,6 +128,8 @@ local function installGame(env)
   _G.UnitLevel = function() return env.level end
   _G.UnitRace = function() return "Dwarf", "Dwarf", 3 end
   _G.UnitClass = function() return "Rogue", "ROGUE", 4 end
+  _G.RAID_CLASS_COLORS = { ROGUE = { colorStr = "fffff468" }, WARLOCK = { colorStr = "ff8788ee" } }
+  _G.LOCALIZED_CLASS_NAMES_MALE = { ROGUE = "Rogue", WARLOCK = "Warlock" }
   _G.GetMoney = function() return env.money end
   _G.C_DateAndTime = { GetSecondsUntilWeeklyReset = function() return env.secondsUntilReset end }
   _G.GameTooltip = {

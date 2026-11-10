@@ -85,16 +85,37 @@ describe("Mount tracker", function()
     end)
   end)
 
+  describe("class colours", function()
+    it("colours opened character names by class, also for alts recorded before classFile existed", function()
+      _G.IntroVertDB.characters = {
+        ["Lock-Silvermoon"] = { lockouts = {} },
+        ["Old-Silvermoon"] = { lockouts = {} },
+        ["Unknown-Silvermoon"] = { lockouts = {} },
+      }
+      _G.IntroVertDB.alts = {
+        ["Lock-Silvermoon"] = { classFile = "WARLOCK" },
+        ["Old-Silvermoon"] = { class = "Rogue" },
+      }
+      env.slash("mounts")
+
+      ns.Window.ClickLink("introvert:toggle:50818")
+
+      assert.is_true(windowHas("    |cff8788eeLock|r - free"))
+      assert.is_true(windowHas("    |cfffff468Old|r - free"))
+      assert.is_true(windowHas("    Unknown - free"))
+    end)
+  end)
+
   describe("/iv mounts", function()
-    it("lists missing mounts with attempts and free characters", function()
+    it("lists missing mounts as clickable rows with attempts and a status line", function()
       inRaid(631, 6)
       env.fire("ENCOUNTER_END", 1, "The Lich King", 6, 25, 1)
       env.fire("UPDATE_INSTANCE_INFO")
 
       env.slash("mounts")
 
-      assert.is_true(windowHas("Icecrown Citadel - free: Nubbel-Silvermoon"))
-      assert.is_true(windowHas("Invincible - The Lich King, 1 attempt"))
+      assert.is_true(windowHas("|Hintrovert:toggle:50818|h[+] Invincible - The Lich King, 1 attempt|h"))
+      assert.is_true(windowHas("\n  Icecrown Citadel: free\n"))
       assert.is_true(windowHas("Collected 1 of 2 tracked raid mounts."))
     end)
 
