@@ -23,6 +23,22 @@ local DATA = {
 local MOUNTS = {
   [50818] = { name = "Invincible", collected = false },
   [45693] = { name = "Mimiron's Head", collected = true },
+  [13335] = { name = "Deathcharger", collected = false },
+  [32768] = { name = "Raven Lord", collected = true },
+}
+
+local DUNGEON_DATA = {
+  raids = {},
+  dungeons = {
+    {
+      instanceID = 329, name = "Stratholme",
+      mounts = { { itemID = 13335, boss = "Lord Aurius Rivendare" } },
+    },
+    {
+      instanceID = 556, name = "Sethekk Halls",
+      mounts = { { itemID = 32768, boss = "Anzu", difficulties = { 2 }, note = "Heroic" } },
+    },
+  },
 }
 
 local function lookup(itemID)
@@ -81,6 +97,26 @@ describe("Raid mounts", function()
       assert.equal(1, result.collected)
       assert.equal(2, result.known)
     end)
+
+    it("lists missing dungeon mounts separately from raids and counts them in the totals", function()
+      local result = Mounts.resolve(DUNGEON_DATA, lookup)
+
+      assert.same({}, result.raids)
+      assert.equal(1, #result.dungeons)
+      assert.equal("Stratholme", result.dungeons[1].name)
+      assert.equal(1, result.collected)
+      assert.equal(2, result.known)
+    end)
+
+    it("works with data that has no dungeons", function()
+      assert.same({}, Mounts.resolve(DATA, lookup).dungeons)
+    end)
+  end)
+
+  describe("match", function()
+    it("finds dungeon mounts by name too", function()
+      assert.same({ { itemID = 13335, name = "Deathcharger" } }, Mounts.match(DUNGEON_DATA, lookup, "death"))
+    end)
   end)
 
   describe("attemptItems", function()
@@ -99,6 +135,12 @@ describe("Raid mounts", function()
     it("ignores other bosses and other raids", function()
       assert.same({}, Mounts.attemptItems(DATA, 631, 6, "Sindragosa"))
       assert.same({}, Mounts.attemptItems(DATA, 999, 6, "The Lich King"))
+    end)
+
+    it("counts dungeon bosses, respecting the heroic-only drops", function()
+      assert.same({ 13335 }, Mounts.attemptItems(DUNGEON_DATA, 329, 1, "Lord Aurius Rivendare"))
+      assert.same({ 32768 }, Mounts.attemptItems(DUNGEON_DATA, 556, 2, "Anzu"))
+      assert.same({}, Mounts.attemptItems(DUNGEON_DATA, 556, 1, "Anzu"))
     end)
   end)
 
@@ -158,11 +200,43 @@ describe("Raid mounts", function()
       assert.same({
         "Click a mount to show or hide your characters.",
         "",
+        "Raid mounts",
         "<50818>[+] Invincible - The Lich King (25 Heroic), 12 attempts",
         "  Icecrown Citadel: free on all 2 characters",
         "",
-        "Collected 1 of 2 tracked raid mounts.",
+        "Collected 1 of 2 tracked mounts.",
       }, lines)
+    end)
+
+    it("lists dungeon mounts in their own section, plain, with no lockout to track", function()
+      local resolved = Mounts.resolve(DUNGEON_DATA, lookup)
+
+      local lines = Mounts.lines(resolved, { [13335] = 3 }, { ["Abe-Realm"] = free }, NOW, options())
+
+      assert.same({
+        "",
+        "Dungeon mounts",
+        "Deathcharger - Lord Aurius Rivendare, 3 attempts",
+        "  Stratholme: no lockout, farm any time",
+        "",
+        "Collected 1 of 2 tracked mounts.",
+      }, lines)
+    end)
+
+    it("separates mounts within a section with an empty line", function()
+      local data = { raids = DATA.raids, dungeons = DUNGEON_DATA.dungeons }
+      local both = function(itemID) return itemID == 32768 and { name = "Raven Lord", collected = false } or lookup(itemID) end
+
+      local lines = Mounts.lines(Mounts.resolve(data, both), {}, {}, NOW, options())
+
+      assert.same({
+        "Dungeon mounts",
+        "Deathcharger - Lord Aurius Rivendare, 0 attempts",
+        "  Stratholme: no lockout, farm any time",
+        "",
+        "Raven Lord - Anzu (Heroic), 0 attempts",
+        "  Sethekk Halls: no lockout, farm any time",
+      }, { lines[7], lines[8], lines[9], lines[10], lines[11], lines[12] })
     end)
 
     it("counts free characters without naming the locked ones", function()
@@ -170,7 +244,7 @@ describe("Raid mounts", function()
 
       local lines = Mounts.lines(Mounts.resolve(DATA, lookup), {}, characters, NOW, options())
 
-      assert.equal("  Icecrown Citadel: free on 1 of 3 characters", lines[4])
+      assert.equal("  Icecrown Citadel: free on 1 of 3 characters", lines[5])
     end)
 
     it("counts zero when every character is locked", function()
@@ -178,21 +252,21 @@ describe("Raid mounts", function()
 
       local lines = Mounts.lines(Mounts.resolve(DATA, lookup), {}, characters, NOW, options())
 
-      assert.equal("  Icecrown Citadel: free on 0 of 2 characters", lines[4])
+      assert.equal("  Icecrown Citadel: free on 0 of 2 characters", lines[5])
     end)
 
     it("keeps the summary short for a single character", function()
       local freeLines = Mounts.lines(Mounts.resolve(DATA, lookup), {}, { ["Abe-Realm"] = free }, NOW, options())
       local lockedLines = Mounts.lines(Mounts.resolve(DATA, lookup), {}, { ["Abe-Realm"] = locked(631) }, NOW, options())
 
-      assert.equal("  Icecrown Citadel: free", freeLines[4])
-      assert.equal("  Icecrown Citadel: locked until reset", lockedLines[4])
+      assert.equal("  Icecrown Citadel: free", freeLines[5])
+      assert.equal("  Icecrown Citadel: locked until reset", lockedLines[5])
     end)
 
     it("says when no character is recorded yet", function()
       local lines = Mounts.lines(Mounts.resolve(DATA, lookup), {}, {}, NOW, options())
 
-      assert.equal("  Icecrown Citadel: no characters recorded yet", lines[4])
+      assert.equal("  Icecrown Citadel: no characters recorded yet", lines[5])
     end)
 
     it("lists each character in class colour with its reset time when the mount is opened", function()
@@ -205,7 +279,7 @@ describe("Raid mounts", function()
         "  Icecrown Citadel: free on 1 of 2 characters",
         "    |cff8788eeAbe|r - locked, resets in 1d 0h",
         "    Bob - free",
-      }, { lines[3], lines[4], lines[5], lines[6] })
+      }, { lines[4], lines[5], lines[6], lines[7] })
     end)
 
     it("adds a loading hint when items are still loading", function()
@@ -214,7 +288,7 @@ describe("Raid mounts", function()
       local lines = Mounts.lines(resolved, {}, {}, NOW, options())
 
       assert.equal("Still loading 3 mounts from the game, try again in a few seconds.", lines[#lines])
-      assert.equal("Collected 0 of 0 tracked raid mounts.", lines[1])
+      assert.equal("Collected 0 of 0 tracked mounts.", lines[1])
     end)
 
     it("uses singular for one attempt and skips an empty note", function()
@@ -222,13 +296,13 @@ describe("Raid mounts", function()
 
       local lines = Mounts.lines(Mounts.resolve(data, lookup), { [50818] = 1 }, {}, NOW, options())
 
-      assert.equal("<50818>[+] Invincible - Boss, 1 attempt", lines[3])
+      assert.equal("<50818>[+] Invincible - Boss, 1 attempt", lines[4])
     end)
 
     it("works without options: plain titles, everything collapsed", function()
       local lines = Mounts.lines(Mounts.resolve(DATA, lookup), {}, {}, NOW)
 
-      assert.equal("[+] Invincible - The Lich King (25 Heroic), 0 attempts", lines[3])
+      assert.equal("[+] Invincible - The Lich King (25 Heroic), 0 attempts", lines[4])
     end)
   end)
 end)
@@ -240,26 +314,42 @@ describe("Raid mount data", function()
     data = helper.loadPure({ "Modules/Raids/MountData.lua" }).RaidMountData
   end)
 
-  it("has a well-formed entry for every raid and mount", function()
+  local function allInstances()
+    local list = {}
+    for _, group in ipairs({ data.raids, data.dungeons }) do
+      for _, instance in ipairs(group) do
+        list[#list + 1] = instance
+      end
+    end
+    return list
+  end
+
+  it("has raids and dungeons", function()
     assert.is_true(#data.raids > 0)
-    for _, raid in ipairs(data.raids) do
-      assert.equal("number", type(raid.instanceID), raid.name)
-      assert.equal("string", type(raid.name))
-      assert.equal("number", type(raid.minutes), raid.name)
-      assert.is_true(#raid.mounts > 0, raid.name)
-      for _, mount in ipairs(raid.mounts) do
-        assert.equal("number", type(mount.itemID), raid.name)
-        assert.equal("string", type(mount.boss), raid.name)
+    assert.is_true(#data.dungeons > 0)
+  end)
+
+  it("has a well-formed entry for every instance and mount", function()
+    for _, instance in ipairs(allInstances()) do
+      assert.equal("number", type(instance.instanceID), instance.name)
+      assert.equal("string", type(instance.name))
+      assert.equal("number", type(instance.minutes), instance.name)
+      assert.is_true(#instance.mounts > 0, instance.name)
+      for _, mount in ipairs(instance.mounts) do
+        assert.equal("number", type(mount.itemID), instance.name)
+        assert.equal("string", type(mount.boss), instance.name)
       end
     end
   end)
 
-  it("lists each item only once", function()
-    local seen = {}
-    for _, raid in ipairs(data.raids) do
-      for _, mount in ipairs(raid.mounts) do
-        assert.is_nil(seen[mount.itemID], "duplicate item " .. mount.itemID)
-        seen[mount.itemID] = true
+  it("lists each item and instance only once", function()
+    local seenItems, seenInstances = {}, {}
+    for _, instance in ipairs(allInstances()) do
+      assert.is_nil(seenInstances[instance.instanceID], "duplicate instance " .. instance.instanceID)
+      seenInstances[instance.instanceID] = true
+      for _, mount in ipairs(instance.mounts) do
+        assert.is_nil(seenItems[mount.itemID], "duplicate item " .. mount.itemID)
+        seenItems[mount.itemID] = true
       end
     end
   end)

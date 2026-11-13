@@ -1,14 +1,21 @@
--- Curated raid mount drops. UNVERIFIED in the 12.1 client: run
--- `/iv mounts check` in game; any item it lists is wrong and is ignored.
+-- Curated raid and dungeon mount drops. Raids are verified in the 12.1
+-- client; dungeons are UNVERIFIED: run `/iv mounts check` in game, any item
+-- it lists is wrong and is ignored.
+--
+-- Dungeons: legacy normal/heroic only. They have no lockout, so they are
+-- shown without a per-character status. Mythic-only dungeon mounts (weekly
+-- lockout) are not tracked yet.
 --
 -- instanceID: map ID (same as GetInstanceInfo / GetSavedInstanceInfo).
 -- minutes: rough solo clear time to the mount boss (guess; used by Finder).
 -- itemID: the mount item; the game resolves name and collected state.
 -- boss: encounter name as sent by ENCOUNTER_END (English client).
 -- difficulties: optional list of difficulty IDs that can drop it
---   (3 = 10N, 4 = 25N, 5 = 10H, 6 = 25H, 16 = Mythic).
+--   (raids: 3 = 10N, 4 = 25N, 5 = 10H, 6 = 25H, 16 = Mythic;
+--    dungeons: 1 = Normal, 2 = Heroic).
 local _, ns = ...
 
+local DUNGEON_HEROIC = 2
 local LEGACY_10_NORMAL = 3
 local LEGACY_25_NORMAL = 4
 local LEGACY_25_HEROIC = 6
@@ -90,6 +97,35 @@ ns.RaidMountData = {
     {
       instanceID = 1712, name = "Antorus, the Burning Throne", minutes = 20,
       mounts = { { itemID = 152789, boss = "Argus the Unmaker", difficulties = { MYTHIC }, note = "Mythic" } },
+    },
+  },
+  dungeons = {
+    {
+      instanceID = 329, name = "Stratholme", minutes = 15,
+      mounts = { { itemID = 13335, boss = "Lord Aurius Rivendare" } },
+    },
+    {
+      instanceID = 556, name = "Sethekk Halls", minutes = 10,
+      mounts = { { itemID = 32768, boss = "Anzu", difficulties = { DUNGEON_HEROIC }, note = "Heroic" } },
+    },
+    {
+      instanceID = 575, name = "Utgarde Pinnacle", minutes = 10,
+      mounts = { { itemID = 44151, boss = "Skadi the Ruthless", difficulties = { DUNGEON_HEROIC }, note = "Heroic" } },
+    },
+    {
+      instanceID = 657, name = "The Vortex Pinnacle", minutes = 10,
+      mounts = { { itemID = 63040, boss = "Altairus" } },
+    },
+    {
+      instanceID = 725, name = "The Stonecore", minutes = 10,
+      mounts = { { itemID = 63043, boss = "Slabhide" } },
+    },
+    {
+      instanceID = 859, name = "Zul'Gurub", minutes = 15,
+      mounts = {
+        { itemID = 68823, boss = "Bloodlord Mandokir" },
+        { itemID = 68824, boss = "High Priestess Kilnara" },
+      },
     },
   },
 }

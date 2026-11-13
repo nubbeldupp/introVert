@@ -10,6 +10,7 @@ local CHARACTER_INDENT = "    "
 local CLOSED_MARKER = "[+] "
 local OPEN_MARKER = "[-] "
 local HINT = "Click a mount to show or hide your characters."
+local NO_LOCKOUT = "no lockout, farm any time"
 
 local function contains(list, value)
   for _, item in ipairs(list) do
@@ -29,18 +30,29 @@ local function sortedKeys(map)
   return keys
 end
 
--- lookup(itemID) -> { name, collected }, { pending = true } while the client
--- is still loading the item, or nil when the item is not a mount.
-function Mounts.resolve(data, lookup)
-  local result = { raids = {}, unresolved = {}, collected = 0, known = 0, pending = 0 }
-  for _, raid in ipairs(data.raids) do
+-- Raids and dungeons in one new list, raids first.
+function Mounts.allInstances(data)
+  local list = {}
+  for _, group in ipairs({ data.raids or {}, data.dungeons or {} }) do
+    for _, instance in ipairs(group) do
+      list[#list + 1] = instance
+    end
+  end
+  return list
+end
+
+-- Resolves one group (raids or dungeons) into `result`; returns the
+-- instances that still have missing mounts.
+local function resolveGroup(instances, lookup, result)
+  local group = {}
+  for _, instance in ipairs(instances or {}) do
     local missing = {}
-    for _, mount in ipairs(raid.mounts) do
+    for _, mount in ipairs(instance.mounts) do
       local info = lookup(mount.itemID)
       if info and info.pending then
         result.pending = result.pending + 1
       elseif not info then
-        result.unresolved[#result.unresolved + 1] = { itemID = mount.itemID, raid = raid.name, boss = mount.boss }
+        result.unresolved[#result.unresolved + 1] = { itemID = mount.itemID, raid = instance.name, boss = mount.boss }
       else
         result.known = result.known + 1
         if info.collected then
@@ -51,11 +63,20 @@ function Mounts.resolve(data, lookup)
       end
     end
     if #missing > 0 then
-      result.raids[#result.raids + 1] = {
-        instanceID = raid.instanceID, name = raid.name, minutes = raid.minutes, missing = missing,
+      group[#group + 1] = {
+        instanceID = instance.instanceID, name = instance.name, minutes = instance.minutes, missing = missing,
       }
     end
   end
+  return group
+end
+
+-- lookup(itemID) -> { name, collected }, { pending = true } while the client
+-- is still loading the item, or nil when the item is not a mount.
+function Mounts.resolve(data, lookup)
+  local result = { unresolved = {}, collected = 0, known = 0, pending = 0 }
+  result.raids = resolveGroup(data.raids, lookup, result)
+  result.dungeons = resolveGroup(data.dungeons, lookup, result)
   return result
 end
 
@@ -64,7 +85,7 @@ end
 function Mounts.match(data, lookup, query)
   local wanted = query:lower()
   local exact, partial = {}, {}
-  for _, raid in ipairs(data.raids) do
+  for _, raid in ipairs(Mounts.allInstances(data)) do
     for _, mount in ipairs(raid.mounts) do
       local info = lookup(mount.itemID)
       if info and info.name then
@@ -85,7 +106,7 @@ end
 function Mounts.attemptItems(data, instanceID, difficultyID, encounterName)
   local wanted = (encounterName or ""):lower()
   local items = {}
-  for _, raid in ipairs(data.raids) do
+  for _, raid in ipairs(Mounts.allInstances(data)) do
     if raid.instanceID == instanceID then
       for _, mount in ipairs(raid.mounts) do
         local difficultyOk = not mount.difficulties or contains(mount.difficulties, difficultyID)
@@ -186,19 +207,44 @@ local function noColor()
   return nil
 end
 
--- A clickable mount row, its status line, and the characters when opened.
-local function appendMount(lines, raid, mount, context)
+-- A clickable raid mount row, its status line, and the characters when opened.
+local function appendRaidMount(lines, raid, mount, context)
   local key = tostring(mount.itemID)
   local isOpen = context.isExpanded(key)
   local marker = isOpen and OPEN_MARKER or CLOSED_MARKER
   local statuses = Mounts.characterStatus(context.characters, raid.instanceID, context.now)
   local count = context.attempts[mount.itemID] or 0
-  lines[#lines + 1] = ""
   lines[#lines + 1] = context.link(key, marker .. mountTitle(mount, count))
   lines[#lines + 1] = ("%s%s: %s"):format(INDENT, raid.name, summary(statuses))
   if isOpen then
     for _, status in ipairs(statuses) do
       lines[#lines + 1] = characterLine(status, context)
+    end
+  end
+end
+
+-- Legacy dungeons have no lockout, so there is nothing per character to show.
+local function appendDungeonMount(lines, dungeon, mount, context)
+  local count = context.attempts[mount.itemID] or 0
+  lines[#lines + 1] = mountTitle(mount, count)
+  lines[#lines + 1] = ("%s%s: %s"):format(INDENT, dungeon.name, NO_LOCKOUT)
+end
+
+-- A section header, then each missing mount separated by an empty line.
+local function appendSection(lines, header, instances, appendMount, context)
+  if #instances == 0 then
+    return
+  end
+  lines[#lines + 1] = ""
+  lines[#lines + 1] = header
+  local first = true
+  for _, instance in ipairs(instances) do
+    for _, mount in ipairs(instance.missing) do
+      if not first then
+        lines[#lines + 1] = ""
+      end
+      first = false
+      appendMount(lines, instance, mount, context)
     end
   end
 end
@@ -214,18 +260,16 @@ function Mounts.lines(resolved, attempts, characters, now, options)
     colorOf = settings.colorOf or noColor,
   }
   local lines = {}
-  if #resolved.raids > 0 then
+  local raids, dungeons = resolved.raids or {}, resolved.dungeons or {}
+  if #raids > 0 then
     lines[1] = HINT
   end
-  for _, raid in ipairs(resolved.raids) do
-    for _, mount in ipairs(raid.missing) do
-      appendMount(lines, raid, mount, context)
-    end
-  end
+  appendSection(lines, "Raid mounts", raids, appendRaidMount, context)
+  appendSection(lines, "Dungeon mounts", dungeons, appendDungeonMount, context)
   if #lines > 0 then
     lines[#lines + 1] = ""
   end
-  lines[#lines + 1] = ("Collected %d of %d tracked raid mounts."):format(resolved.collected, resolved.known)
+  lines[#lines + 1] = ("Collected %d of %d tracked mounts."):format(resolved.collected, resolved.known)
   if (resolved.pending or 0) > 0 then
     lines[#lines + 1] = ("Still loading %d mounts from the game, try again in a few seconds."):format(resolved.pending)
   end

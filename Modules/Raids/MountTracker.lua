@@ -1,13 +1,14 @@
--- Raid Farm Planner, part 2: counts mount attempts on boss kills and lists
--- missing raid mounts with /iv mounts.
+-- Raid Farm Planner, part 2: counts mount attempts on raid and dungeon boss
+-- kills and lists missing mounts with /iv mounts.
 local _, ns = ...
 
 local Mounts = ns.RaidMounts
 
 local KILL_SUCCESS = 1
+local COUNTED_INSTANCE_TYPES = { raid = true, party = true }
 
 local HELP_LINES = {
-  "/iv mounts - missing raid mounts, attempts and free alts",
+  "/iv mounts - missing raid and dungeon mounts, attempts and free alts",
   "/iv mounts check - list mount data the game does not recognise",
   "/iv mounts set <mount> <count> - enter attempts from before introVert",
 }
@@ -24,8 +25,8 @@ local function isCached(itemID)
 end
 
 local function requestItems()
-  for _, raid in ipairs(ns.RaidMountData.raids) do
-    for _, mount in ipairs(raid.mounts) do
+  for _, instance in ipairs(Mounts.allInstances(ns.RaidMountData)) do
+    for _, mount in ipairs(instance.mounts) do
       C_Item.RequestLoadItemDataByID(mount.itemID)
     end
   end
@@ -68,7 +69,7 @@ local function onEncounterEnd(_, _, encounterName, _, _, success)
     return
   end
   local _, instanceType, difficultyID, _, _, _, _, instanceID = GetInstanceInfo()
-  if instanceType ~= "raid" then
+  if not COUNTED_INSTANCE_TYPES[instanceType] then
     return
   end
   for _, itemID in ipairs(Mounts.attemptItems(ns.RaidMountData, instanceID, difficultyID, encounterName)) do

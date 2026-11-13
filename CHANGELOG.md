@@ -3,6 +3,16 @@
 All notable changes to introVert are listed here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.8.0] - 2026-11-13
+
+### Added
+- Dungeon mounts in the Mounts tab, in their own section: Deathcharger (Stratholme), Raven Lord (Sethekk Halls, heroic), Blue Proto-Drake (Utgarde Pinnacle, heroic), Drake of the North Wind (Vortex Pinnacle), Vitreous Stone Drake (Stonecore), Armored Razzashi Raptor and Swift Zulian Panther (Zul'Gurub)
+- Dungeon boss kills count as mount attempts, like raids; `/iv mounts set` and `/iv mounts check` cover dungeon mounts too
+
+### Changed
+- The Mounts tab is split into "Raid mounts" and "Dungeon mounts"; dungeons show "no lockout, farm any time" instead of a per-character status
+- The total reads "Collected X of Y tracked mounts"
+
 ## [0.7.0] - 2026-11-13
 
 ### Added
@@ -83,6 +93,7 @@ First public release.
 - Minimap button (left-click: window, right-click: options) and Addon Compartment entry
 - `/iv help` lists all commands
 
+[0.8.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.8.0
 [0.7.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.7.0
 [0.6.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.6.0
 [0.5.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.5.0

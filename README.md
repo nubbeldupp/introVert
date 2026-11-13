@@ -2,7 +2,7 @@
 
 World of Warcraft (Retail) addon for players who prefer to play alone.
 
-**Current version: 0.7.0** · [Changelog](#changelog) · MIT License
+**Current version: 0.8.0** · [Changelog](#changelog) · MIT License
 
 ## Modules
 
@@ -76,10 +76,12 @@ or kill a raid boss. Lockouts that have reset disappear automatically.
 
 Log in once on each alt so it gets recorded.
 
-### Raid mounts (Raid Farm Planner, part 2)
+### Raid and dungeon mounts (Raid Farm Planner, part 2)
 
-Tracks mount drops from 15 legacy raids (Karazhan to Antorus). Mount names
-and "collected" come from your mount journal; the addon only stores item IDs.
+Tracks mount drops from 15 legacy raids (Karazhan to Antorus) and 6 legacy
+dungeons (Stratholme, Sethekk Halls, Utgarde Pinnacle, Vortex Pinnacle,
+Stonecore, Zul'Gurub). Mount names and "collected" come from your mount
+journal; the addon only stores item IDs.
 
 ```
 /iv mounts          missing mounts per raid, attempts, and which alts are free
@@ -87,6 +89,10 @@ and "collected" come from your mount journal; the addon only stores item IDs.
 /iv mounts set invincible 12    enter attempts from before you had introVert
 ```
 
+- Dungeon mounts have their own section. Legacy normal and heroic dungeons
+  have no lockout, so they show "no lockout, farm any time" instead of a
+  per-character status, and are not part of the Finder plan. Attempts count
+  the same way as in raids.
 - The Mounts tab shows one row per missing mount with a short status, e.g.
   "Karazhan: free on all 5 characters" or "free on 4 of 5 characters".
   Click a mount to open the list of your characters with their reset times;
@@ -176,6 +182,11 @@ commands share the same saved settings.
 Ideas for later live in [docs/IDEAS.md](docs/IDEAS.md).
 
 ## Changelog
+
+### 0.8.0 (2026-11-13): dungeon mounts
+
+15. Dungeon mounts section in the Mounts tab: 7 mounts from 6 legacy
+    dungeons with attempt counting
 
 ### 0.7.0 (2026-11-13): Finder checklist
 

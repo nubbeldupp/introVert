@@ -12,6 +12,12 @@ local TEST_DATA = {
       mounts = { { itemID = 45693, boss = "Yogg-Saron" } },
     },
   },
+  dungeons = {
+    {
+      instanceID = 329, name = "Stratholme",
+      mounts = { { itemID = 13335, boss = "Lord Aurius Rivendare" } },
+    },
+  },
 }
 
 describe("Mount tracker", function()
@@ -30,6 +36,7 @@ describe("Mount tracker", function()
     env.mounts = {
       [50818] = { mountID = 363, name = "Invincible", collected = false },
       [45693] = { mountID = 304, name = "Mimiron's Head", collected = true },
+      [13335] = { mountID = 69, name = "Deathcharger", collected = false },
     }
     ns = Wow.loadAddon(helper)
     ns.RaidMountData = TEST_DATA
@@ -76,12 +83,21 @@ describe("Mount tracker", function()
       assert.is_nil(IntroVertDB.attempts[45693])
     end)
 
-    it("ignores kills outside raids", function()
-      env.instance = { inInstance = true, instanceType = "party", difficultyID = 6, instanceID = 631 }
+    it("ignores kills outside raids and dungeons", function()
+      env.instance = { inInstance = true, instanceType = "scenario", difficultyID = 6, instanceID = 631 }
 
       env.fire("ENCOUNTER_END", 1, "The Lich King", 6, 5, 1)
 
       assert.is_nil(IntroVertDB.attempts[50818])
+    end)
+
+    it("counts dungeon boss kills", function()
+      env.instance = { inInstance = true, instanceType = "party", difficultyID = 1, instanceID = 329 }
+
+      env.fire("ENCOUNTER_END", 1, "Lord Aurius Rivendare", 1, 5, 1)
+
+      assert.equal(1, IntroVertDB.attempts[13335])
+      assert.is_true(env.printed("Attempt 1 for Deathcharger"))
     end)
   end)
 
@@ -116,7 +132,9 @@ describe("Mount tracker", function()
 
       assert.is_true(windowHas("|Hintrovert:toggle:50818|h[+] Invincible - The Lich King, 1 attempt|h"))
       assert.is_true(windowHas("\n  Icecrown Citadel: free\n"))
-      assert.is_true(windowHas("Collected 1 of 2 tracked raid mounts."))
+      assert.is_true(windowHas("Collected 1 of 3 tracked mounts."))
+      assert.is_true(windowHas("Dungeon mounts|r\n|cffffd100Deathcharger - Lord Aurius Rivendare, 0 attempts|r"))
+      assert.is_true(windowHas("\n  Stratholme: no lockout, farm any time"))
     end)
 
     it("lists unrecognised items with check", function()
@@ -130,11 +148,11 @@ describe("Mount tracker", function()
     it("confirms when every item is recognised", function()
       env.slash("mounts check")
 
-      assert.is_true(env.printed("All 2 tracked items are known mounts."))
+      assert.is_true(env.printed("All 3 tracked items are known mounts."))
     end)
 
-    it("asks the client to load every tracked item at startup", function()
-      assert.same({ [50818] = true, [45693] = true }, env.itemLoadRequests)
+    it("asks the client to load every tracked raid and dungeon item at startup", function()
+      assert.same({ [50818] = true, [45693] = true, [13335] = true }, env.itemLoadRequests)
     end)
 
     it("reports uncached items as loading, not as wrong", function()
@@ -159,7 +177,7 @@ describe("Mount tracker", function()
     it("is listed in /iv help", function()
       env.slash("help")
 
-      assert.is_true(env.printed("/iv mounts - missing raid mounts"))
+      assert.is_true(env.printed("/iv mounts - missing raid and dungeon mounts"))
       assert.is_true(env.printed("/iv mounts check"))
       assert.is_true(env.printed("/iv mounts set <mount> <count>"))
     end)

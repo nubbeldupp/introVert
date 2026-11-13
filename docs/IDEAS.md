@@ -11,9 +11,11 @@ Ideas parked for later. Built ones move to the README.
 
 ## Solo progression
 
-- **Dungeon mounts**: old dungeon drops (Rivendare's Deathcharger, Sethekk
-  Raven Lord, Blue Proto-Drake, ...) in the Mounts tab with attempts; same
-  data model as raids, verified with `/iv mounts check`.
+- **Mythic dungeon mounts**: Mythic-only drops (Sharkbait from Freehold,
+  Mummified Raptor Skull from Kings' Rest, Return to Karazhan, Mechagon,
+  Necrotic Wake, ...). These have a weekly lockout, so lockout recording
+  would need to include dungeons first. Also the old Magisters' Terrace
+  hawkstrider once it is clear how Midnight's remade dungeon handles it.
 - **Session journal**: "Journal" tab logging each session (raid kills,
   delves, Labyrinth chambers, achievements, attempts); one line on next
   login: "Last session: 3 raids, 2 delves, 1 achievement".
