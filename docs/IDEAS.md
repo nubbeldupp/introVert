@@ -14,8 +14,6 @@ Ideas parked for later. Built ones move to the README.
 - **Dungeon mounts**: old dungeon drops (Rivendare's Deathcharger, Sethekk
   Raven Lord, Blue Proto-Drake, ...) in the Mounts tab with attempts; same
   data model as raids, verified with `/iv mounts check`.
-- **Finder checklist**: the Finder plan becomes a checklist that ticks itself
-  off (mount boss killed, delve finished) during the session.
 - **Session journal**: "Journal" tab logging each session (raid kills,
   delves, Labyrinth chambers, achievements, attempts); one line on next
   login: "Last session: 3 raids, 2 delves, 1 achievement".

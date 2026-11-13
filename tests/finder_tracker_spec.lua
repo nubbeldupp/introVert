@@ -46,10 +46,79 @@ describe("Solo Content Finder", function()
     env.slash("finder")
 
     assert.equal("finder", ns.Window.CurrentView())
-    assert.is_true(windowHas("Plan for 60 min (about 35 min planned)"))
-    assert.is_true(windowHas("  15 min  Bountiful delve: Collegiate Calamity (Eversong Woods) (vault)"))
-    assert.is_true(windowHas("  20 min  Icecrown Citadel: Invincible"))
+    assert.is_true(windowHas("Checklist for 60 min: 0 of 2 done (about 35 min planned)"))
+    assert.is_true(windowHas("  [ ] 15 min  Bountiful delve: Collegiate Calamity (Eversong Woods) (vault)"))
+    assert.is_true(windowHas("  [ ] 20 min  Icecrown Citadel: Invincible"))
     assert.is_true(windowHas("  98% Anvil Mastery II (491/500)"))
+  end)
+
+  describe("checklist", function()
+    local KEY = "Nubbel-Silvermoon"
+    local ICC_LOCKOUT = {
+      name = "Icecrown Citadel", reset = 2 * DAY, difficultyID = 4, difficultyName = "25 Player", locked = true,
+      extended = false, isRaid = true, numEncounters = 12, encounterProgress = 1, instanceID = 631,
+    }
+
+    local function lockIcc()
+      env.savedInstances = { env.savedInstances[1], ICC_LOCKOUT }
+      env.fire("UPDATE_INSTANCE_INFO")
+    end
+
+    it("is saved per character so it survives a reload", function()
+      env.slash("finder")
+
+      local checklist = IntroVertDB.finder.checklists[KEY]
+      assert.equal(2, #checklist.items)
+      assert.equal(60, checklist.budget)
+    end)
+
+    it("ticks a raid off once this character is locked to it, keeping it on the list", function()
+      env.slash("finder")
+
+      lockIcc()
+
+      assert.is_true(windowHas("Checklist for 60 min: 1 of 2 done"))
+      assert.is_true(windowHas("[x] 20 min  Icecrown Citadel: Invincible"))
+    end)
+
+    it("ticks a delve off once it is recorded", function()
+      env.slash("finder")
+
+      ns.UpdateSetting({ "delves" }, { ["Collegiate Calamity"] = { runs = 1, bestTier = 8, lastAt = env.time } })
+
+      assert.is_true(windowHas("[x] 15 min  Bountiful delve: Collegiate Calamity"))
+    end)
+
+    it("cheers when everything is done", function()
+      env.slash("finder")
+
+      lockIcc()
+      ns.UpdateSetting({ "delves" }, { ["Collegiate Calamity"] = { runs = 1, bestTier = 8, lastAt = env.time } })
+
+      assert.is_true(windowHas("2 of 2 done"))
+      assert.is_true(windowHas("All done. Nice session!"))
+    end)
+
+    it("/iv finder new plans again from what is still open", function()
+      env.slash("finder")
+      lockIcc()
+
+      env.slash("finder new")
+
+      assert.is_true(windowHas("Checklist for 60 min: 0 of 1 done (about 15 min planned)"))
+      assert.is_false(windowHas("Icecrown Citadel"))
+    end)
+
+    it("starts fresh on login but not on reload", function()
+      env.slash("finder")
+      env.slash("window")
+
+      env.fire("PLAYER_ENTERING_WORLD", false, true)
+      assert.is_not_nil(IntroVertDB.finder.checklists[KEY])
+
+      env.fire("PLAYER_ENTERING_WORLD", true, false)
+      assert.is_nil(IntroVertDB.finder.checklists[KEY])
+    end)
   end)
 
   it("leaves out raids this character is already locked to", function()
@@ -62,7 +131,7 @@ describe("Solo Content Finder", function()
     env.slash("finder 15")
 
     assert.equal(15, IntroVertDB.finder.minutes)
-    assert.is_true(windowHas("Plan for 15 min (about 15 min planned)"))
+    assert.is_true(windowHas("Checklist for 15 min: 0 of 1 done (about 15 min planned)"))
     assert.is_true(windowHas("Also worth doing|r\n  20 min  Icecrown Citadel: Invincible"))
   end)
 

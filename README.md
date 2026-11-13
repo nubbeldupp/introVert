@@ -2,7 +2,7 @@
 
 World of Warcraft (Retail) addon for players who prefer to play alone.
 
-**Current version: 0.6.0** · [Changelog](#changelog) · MIT License
+**Current version: 0.7.0** · [Changelog](#changelog) · MIT License
 
 ## Modules
 
@@ -139,6 +139,20 @@ for a solo session of that length (default 60, also a slider in options):
   listed under "Also worth doing"
 - achievements at 90%+ listed separately (no time estimate possible)
 
+The plan is kept as a **checklist** for the session that ticks itself off:
+
+```
+Checklist for 60 min: 1 of 2 done (about 35 min planned)
+  [x] 15 min  Bountiful delve: Collegiate Calamity (Eversong Woods) (vault)
+  [ ] 20 min  Icecrown Citadel: Invincible
+```
+
+- a raid is ticked once this character is saved to it, a delve once it is
+  finished; done items stay on the list (greyed out)
+- saved per character, so it survives `/reload`; logging in starts a fresh one
+- `/iv finder new` plans again from what is still open; `/iv finder <minutes>`
+  also starts a new checklist with that length
+
 ### Settings
 
 All settings are in **Options → AddOns → introVert** (or type `/iv options`):
@@ -162,6 +176,11 @@ commands share the same saved settings.
 Ideas for later live in [docs/IDEAS.md](docs/IDEAS.md).
 
 ## Changelog
+
+### 0.7.0 (2026-11-13): Finder checklist
+
+14. Finder plan kept as a session checklist that ticks itself off: raids
+    once this character is saved to them, delves once finished
 
 ### 0.6.0 (2026-11-10): readable Mounts tab
 

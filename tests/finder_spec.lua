@@ -27,8 +27,10 @@ describe("Finder", function()
       local result = Finder.mountSuggestions(raids, { [631] = true })
 
       assert.same({
-        { title = "Karazhan: Fiery Warhorse, Midnight", minutes = 15, value = 2 * Finder.MOUNT_VALUE },
-        { title = "Ulduar: Mimiron's Head", minutes = Finder.DEFAULT_RAID_MINUTES, value = Finder.MOUNT_VALUE },
+        { id = "raid:532", raid = 532, title = "Karazhan: Fiery Warhorse, Midnight", minutes = 15,
+          value = 2 * Finder.MOUNT_VALUE },
+        { id = "raid:603", raid = 603, title = "Ulduar: Mimiron's Head", minutes = Finder.DEFAULT_RAID_MINUTES,
+          value = Finder.MOUNT_VALUE },
       }, result)
     end)
 
@@ -56,6 +58,7 @@ describe("Finder", function()
       local closed = Finder.delveSuggestions({ { name = "Fungal Folly", zone = "Isle of Dorn" } }, false)
 
       assert.same({
+        id = "delve:Fungal Folly", delve = "Fungal Folly",
         title = "Bountiful delve: Fungal Folly (Isle of Dorn) (vault)",
         minutes = Finder.DELVE_MINUTES, value = Finder.VAULT_DELVE_VALUE,
       }, open[1])
@@ -92,9 +95,59 @@ describe("Finder", function()
     end)
   end)
 
+  describe("checklist", function()
+    local NOW = 1000
+    local raidItem = { id = "raid:631", raid = 631, title = "Icecrown Citadel: Invincible", minutes = 20, value = 3 }
+    local delveItem = { id = "delve:Fungal Folly", delve = "Fungal Folly", title = "Bountiful delve: Fungal Folly",
+      minutes = 15, value = 5 }
+
+    it("freezes the picked suggestions with the budget and creation time", function()
+      local plan = Finder.plan({ raidItem, delveItem, suggestion("Long", 90, 1) }, 40)
+
+      local checklist = Finder.newChecklist(plan, 40, NOW)
+
+      assert.same({
+        createdAt = NOW, budget = 40, used = 35,
+        items = {
+          { id = "delve:Fungal Folly", delve = "Fungal Folly", title = "Bountiful delve: Fungal Folly", minutes = 15 },
+          { id = "raid:631", raid = 631, title = "Icecrown Citadel: Invincible", minutes = 20 },
+        },
+      }, checklist)
+    end)
+
+    it("counts a raid as done once this character is locked to it", function()
+      assert.is_true(Finder.isDone(raidItem, { locked = { [631] = true }, delves = {}, since = NOW }))
+      assert.is_false(Finder.isDone(raidItem, { locked = {}, delves = {}, since = NOW }))
+    end)
+
+    it("counts a delve as done once it was finished after the checklist was made", function()
+      local after = { delves = { ["Fungal Folly"] = { lastAt = NOW + 1 } }, locked = {}, since = NOW }
+      local before = { delves = { ["Fungal Folly"] = { lastAt = NOW - 1 } }, locked = {}, since = NOW }
+
+      assert.is_true(Finder.isDone(delveItem, after))
+      assert.is_false(Finder.isDone(delveItem, before))
+      assert.is_false(Finder.isDone(delveItem, { delves = {}, locked = {}, since = NOW }))
+    end)
+
+    it("leaves checklist items out of the other suggestions", function()
+      local checklist = Finder.newChecklist(Finder.plan({ raidItem }, 30), 30, NOW)
+      local plan = Finder.plan({ raidItem, delveItem }, 60)
+
+      assert.same({ delveItem }, Finder.otherSuggestions(plan, checklist))
+    end)
+  end)
+
   describe("lines", function()
-    it("shows the plan, the rest and almost-finished achievements", function()
-      local plan = Finder.plan({ suggestion("Fast", 10, 3), suggestion("Slow", 50, 1) }, 30)
+    local NOW = 1000
+    local fast = { id = "a", title = "Fast", minutes = 10, value = 3 }
+    local slow = { id = "b", title = "Slow", minutes = 50, value = 1 }
+
+    local function state(doneIds)
+      return { isDone = function(item) return (doneIds or {})[item.id] == true end }
+    end
+
+    it("shows the checklist, other suggestions and almost-finished achievements", function()
+      local checklist = Finder.newChecklist(Finder.plan({ fast, slow }, 30), 30, NOW)
       local achievements = {
         { name = "Anvil Mastery II", done = 491, total = 500, fraction = 0.982 },
         { name = "Far", done = 1, total = 10, fraction = 0.1 },
@@ -102,26 +155,51 @@ describe("Finder", function()
       }
 
       assert.same({
-        "Plan for 30 min (about 10 min planned)",
-        "  10 min  Fast",
+        "Checklist for 30 min: 0 of 1 done (about 10 min planned)",
+        "  [ ] 10 min  Fast",
         "Also worth doing",
         "  50 min  Slow",
         "Almost finished achievements",
         "  98% Anvil Mastery II (491/500)",
         "  90% Mount Thing (9/10) - Mount: X",
-      }, Finder.lines(plan, 30, achievements))
+        "",
+        "  /iv finder new starts a fresh checklist.",
+      }, Finder.lines(checklist, state(), { slow }, achievements))
+    end)
+
+    it("ticks done items and greys them out", function()
+      local checklist = Finder.newChecklist(Finder.plan({ fast, slow }, 60), 60, NOW)
+
+      local lines = Finder.lines(checklist, state({ a = true }), {}, {})
+
+      assert.equal("Checklist for 60 min: 1 of 2 done (about 60 min planned)", lines[1])
+      assert.equal("  |cff808080[x] 10 min  Fast|r", lines[2])
+      assert.equal("  [ ] 50 min  Slow", lines[3])
+    end)
+
+    it("cheers when everything is done", function()
+      local checklist = Finder.newChecklist(Finder.plan({ fast }, 30), 30, NOW)
+
+      local lines = Finder.lines(checklist, state({ a = true }), {}, {})
+
+      assert.equal("  All done. Nice session!", lines[3])
     end)
 
     it("explains when nothing fits the budget", function()
-      local lines = Finder.lines(Finder.plan({ suggestion("Long", 90, 1) }, 30), 30, {})
+      local checklist = Finder.newChecklist(Finder.plan({ slow }, 30), 30, NOW)
+
+      local lines = Finder.lines(checklist, state(), { slow }, {})
 
       assert.equal("  Nothing fits in 30 min. Try a longer session.", lines[2])
     end)
 
     it("explains when there is nothing to suggest", function()
-      local lines = Finder.lines(Finder.plan({}, 30), 30, {})
+      local checklist = Finder.newChecklist(Finder.plan({}, 30), 30, NOW)
 
-      assert.same({ "Plan for 30 min (about 0 min planned)", "  No suggestions right now." }, lines)
+      local lines = Finder.lines(checklist, state(), {}, {})
+
+      assert.same({ "Checklist for 30 min: 0 of 0 done (about 0 min planned)", "  No suggestions right now." },
+        { lines[1], lines[2] })
     end)
   end)
 end)

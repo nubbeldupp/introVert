@@ -28,6 +28,9 @@ Defaults.values = {
   delves = {},
   finder = {
     minutes = 60,
+    -- Keyed by "Name-Realm": the session checklist
+    -- { createdAt, budget, used, items = { { id, title, minutes, raid | delve } } }.
+    checklists = {},
   },
   minimap = {
     show = true,

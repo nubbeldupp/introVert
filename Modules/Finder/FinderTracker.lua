@@ -1,5 +1,7 @@
 -- Solo Content Finder: plans a solo session from what the other modules
--- know. Each source is read safely, so one broken API never empties the plan.
+-- know and keeps it as a checklist that ticks itself off (raid lockout
+-- gained, delve recorded). Each source is read safely, so one broken API
+-- never empties the plan.
 local _, ns = ...
 
 local Finder = ns.Finder
@@ -9,7 +11,10 @@ local MAX_BUDGET = 600
 local SLIDER_RANGE = { min = 15, max = 180, step = 15 }
 local HELP_LINES = {
   "/iv finder [minutes] - plan a solo session from raids, delves and achievements (also /iv solo)",
+  "/iv finder new - start a fresh checklist",
 }
+
+local Tracker = {}
 
 local function safely(read, fallback)
   local ok, value = pcall(read)
@@ -41,23 +46,66 @@ local function suggestions()
   return result
 end
 
+local function currentPlan()
+  return Finder.plan(suggestions(), ns.db.finder.minutes)
+end
+
+local function savedChecklist()
+  return (ns.db.finder.checklists or {})[ns.CharacterKey()]
+end
+
+-- Freezes the current plan as this character's checklist (saved, so it
+-- survives /reload).
+local function startChecklist(plan)
+  local checklist = Finder.newChecklist(plan, ns.db.finder.minutes, time())
+  ns.UpdateSetting({ "finder", "checklists", ns.CharacterKey() }, checklist)
+  return checklist
+end
+
+local function progressFor(checklist)
+  local progress = { locked = lockedInstances(), delves = ns.db.delves or {}, since = checklist.createdAt }
+  return { isDone = function(item) return Finder.isDone(item, progress) end }
+end
+
 local function finderLines()
-  local budget = ns.db.finder.minutes
+  local plan = currentPlan()
+  local checklist = savedChecklist() or startChecklist(plan)
   local achievements = safely(ns.AchievementTracker.Entries, {})
-  return Finder.lines(Finder.plan(suggestions(), budget), budget, achievements)
+  return Finder.lines(checklist, progressFor(checklist), Finder.otherSuggestions(plan, checklist), achievements)
+end
+
+-- A new login is a new session; a /reload keeps the checklist.
+local function onEnteringWorld(_, isInitialLogin)
+  if isInitialLogin and savedChecklist() then
+    ns.UpdateSetting({ "finder", "checklists", ns.CharacterKey() }, nil)
+  end
+end
+
+local function setBudget(text)
+  local minutes = tonumber(text)
+  if not minutes or minutes < MIN_BUDGET or minutes > MAX_BUDGET then
+    ns.Print(("Give a session length between %d and %d minutes, e.g. /iv finder 45."):format(MIN_BUDGET, MAX_BUDGET))
+    return false
+  end
+  ns.UpdateSetting({ "finder", "minutes" }, math.floor(minutes))
+  return true
 end
 
 local function onCommand(input)
   local text = input:match("^%s*(.-)%s*$")
-  if text ~= "" then
-    local minutes = tonumber(text)
-    if not minutes or minutes < MIN_BUDGET or minutes > MAX_BUDGET then
-      ns.Print(("Give a session length between %d and %d minutes, e.g. /iv finder 45."):format(MIN_BUDGET, MAX_BUDGET))
+  if text:lower() == "new" then
+    startChecklist(currentPlan())
+  elseif text ~= "" then
+    if not setBudget(text) then
       return
     end
-    ns.UpdateSetting({ "finder", "minutes" }, math.floor(minutes))
+    startChecklist(currentPlan())
   end
   ns.Window.Show("finder")
+end
+
+function Tracker.OnInit()
+  ns.On("PLAYER_ENTERING_WORLD", onEnteringWorld)
 end
 
 ns.Options.AddSection(function(ui)
@@ -69,3 +117,4 @@ end)
 ns.Window.AddView("finder", "Finder", finderLines)
 ns.RegisterCommand("finder", onCommand, HELP_LINES)
 ns.RegisterCommand("solo", onCommand)
+ns.RegisterModule("finder", Tracker)

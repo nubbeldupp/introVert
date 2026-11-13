@@ -3,6 +3,17 @@
 All notable changes to introVert are listed here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] - 2026-11-13
+
+### Added
+- Finder checklist: the session plan is saved per character and ticks itself off; a raid once this character is saved to it, a bountiful delve once it is finished
+- Done items stay on the list, greyed out with [x]; "All done. Nice session!" when everything is ticked
+- `/iv finder new` plans a fresh checklist from what is still open; `/iv finder <minutes>` also starts a new one
+- The checklist survives `/reload`; logging in starts a new session
+
+### Changed
+- "Also worth doing" stays live and leaves out what is already on the checklist
+
 ## [0.6.0] - 2026-11-10
 
 ### Changed
@@ -72,5 +83,6 @@ First public release.
 - Minimap button (left-click: window, right-click: options) and Addon Compartment entry
 - `/iv help` lists all commands
 
+[0.7.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.7.0
 [0.6.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.6.0
 [0.5.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.5.0
