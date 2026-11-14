@@ -16,9 +16,6 @@ Ideas parked for later. Built ones move to the README.
   Necrotic Wake, ...). These have a weekly lockout, so lockout recording
   would need to include dungeons first. Also the old Magisters' Terrace
   hawkstrider once it is clear how Midnight's remade dungeon handles it.
-- **Session journal**: "Journal" tab logging each session (raid kills,
-  delves, Labyrinth chambers, achievements, attempts); one line on next
-  login: "Last session: 3 raids, 2 delves, 1 achievement".
 - **Rare alert**: quiet notice when a rare with a mount drop shows on the
   map (vignettes); needs a curated rare list.
 

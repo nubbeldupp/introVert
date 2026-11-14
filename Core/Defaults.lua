@@ -39,6 +39,12 @@ Defaults.values = {
   -- Account-wide, keyed by "Name-Realm":
   -- { level, itemLevel, gold, vault = { raid, dungeon, world }, hasRewards, updatedAt }.
   alts = {},
+  journal = {
+    loginSummary = true,
+    -- Newest first: { character, startedAt, updatedAt, startGold, gold,
+    -- counts = { boss = 2, ... }, entries = { { at, kind, text } } }.
+    sessions = {},
+  },
   shields = {
     guildInvites = true,
     duels = true,

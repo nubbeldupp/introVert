@@ -2,7 +2,7 @@
 ## Title: introVert
 ## Notes: Quality of life for solo players: quiet LFG/LFR groups, solo progression tools.
 ## Author: nubbeldupp
-## Version: 0.8.0
+## Version: 0.9.0
 ## SavedVariables: IntroVertDB
 ## IconTexture: Interface\Icons\Ability_Rogue_Disguise
 ## AddonCompartmentFunc: IntroVert_OnAddonCompartmentClick
@@ -44,3 +44,6 @@ Modules/Finder/FinderTracker.lua
 
 Modules/Alts/Alts.lua
 Modules/Alts/AltTracker.lua
+
+Modules/Journal/Journal.lua
+Modules/Journal/JournalTracker.lua

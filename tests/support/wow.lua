@@ -375,8 +375,9 @@ local function installAchievements(env)
   end
   _G.GetCategoryNumAchievements = function(id) return #category(id).achievements end
   -- Same return order as the real API (15 values).
+  -- Like the real API: (categoryID, index) or just (achievementID).
   _G.GetAchievementInfo = function(categoryID, index)
-    local a = category(categoryID).achievements[index]
+    local a = index and category(categoryID).achievements[index] or achievementByID(categoryID)
     return a.id, a.name, a.points, a.completed, 0, 0, 0, "", 0, 0, a.reward, a.isGuild, false, nil, false
   end
   _G.GetAchievementNumCriteria = function(id) return #achievementByID(id).criteria end

@@ -105,11 +105,13 @@ local function recordChamber(name, tier)
   visitChambers = visitChambers + 1
   ns.UpdateSetting({ "delves" }, Delves.recordLabyrinth(ns.db.delves, name, tier, visitChambers, time()))
   ns.Print(("Labyrinth: chamber cleared (%d this visit), tier %s."):format(visitChambers, tier or "?"))
+  ns.Publish("LabyrinthChamber", name, tier, visitChambers)
 end
 
 local function recordRun(name, tier)
   ns.UpdateSetting({ "delves" }, Delves.record(ns.db.delves, name, tier, time()))
   ns.Print(("Delve recorded: %s, tier %s."):format(name, tier or "?"))
+  ns.Publish("DelveRecorded", name, tier)
 end
 
 local function onScenarioCompleted()

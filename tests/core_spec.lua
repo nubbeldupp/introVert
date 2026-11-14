@@ -35,6 +35,18 @@ describe("Core", function()
     assert.is_nil(ns.db)
   end)
 
+  it("delivers published signals to every subscriber, even when one fails", function()
+    local received = {}
+    ns.Subscribe("DelveRecorded", function() error("boom") end)
+    ns.Subscribe("DelveRecorded", function(name, tier) received[#received + 1] = name .. ":" .. tier end)
+
+    ns.Publish("DelveRecorded", "Fungal Folly", 8)
+    ns.Publish("SomethingElse", "ignored")
+
+    assert.same({ "Fungal Folly:8" }, received)
+    assert.equal(1, #env.errors)
+  end)
+
   it("reports a failing handler and still runs the others", function()
     local ran = false
     ns.On("TEST_EVENT", function() error("boom") end)

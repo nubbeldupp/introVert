@@ -60,6 +60,22 @@ eventFrame:SetScript("OnEvent", function(_, event, ...)
   end
 end)
 
+-- Addon-internal signals (e.g. "DelveRecorded") so modules can react to each
+-- other without depending on each other. Not game events: nothing is
+-- registered with the client.
+local subscribers = {}
+
+function ns.Subscribe(topic, handler)
+  subscribers[topic] = subscribers[topic] or {}
+  subscribers[topic][#subscribers[topic] + 1] = handler
+end
+
+function ns.Publish(topic, ...)
+  for _, handler in ipairs(subscribers[topic] or {}) do
+    safeCall(handler, ...)
+  end
+end
+
 local settingsListeners = {}
 
 -- listener(path) runs after every UpdateSetting (options panel or slash).

@@ -62,6 +62,7 @@ local function countAttempt(itemID)
   local count = (attempts()[itemID] or 0) + 1
   ns.UpdateSetting({ "attempts", itemID }, count)
   ns.Print(("Attempt %d for %s."):format(count, mount.name))
+  ns.Publish("MountAttempt", mount.name, count)
 end
 
 local function onEncounterEnd(_, _, encounterName, _, _, success)

@@ -2,7 +2,7 @@
 
 World of Warcraft (Retail) addon for players who prefer to play alone.
 
-**Current version: 0.8.0** · [Changelog](#changelog) · MIT License
+**Current version: 0.9.0** · [Changelog](#changelog) · MIT License
 
 ## Modules
 
@@ -159,6 +159,29 @@ Checklist for 60 min: 1 of 2 done (about 35 min planned)
 - `/iv finder new` plans again from what is still open; `/iv finder <minutes>`
   also starts a new checklist with that length
 
+### Session Journal
+
+`/iv journal` opens the **Journal** tab: what you did this session and in
+earlier ones.
+
+```
+This session: Nubbel-Silvermoon, 1h 20m
+  2 boss kills, 1 delve, 1 mount attempt, +1,234g
+  14:20  Boss: Onyxia (Onyxia's Lair)
+  14:20  Mount attempt 12: Onyxian Drake
+  14:02  Delve: Collegiate Calamity, tier 8
+Earlier sessions
+  Nov 12 18:30  Palanore-Silvermoon, 45m - 2 delves, +300g
+```
+
+- logs raid and dungeon boss kills, delves, Labyrinth chambers, new
+  achievements, mount attempts and the gold you made or spent
+- a login starts a new session, a `/reload` continues it; the last 30
+  sessions are kept
+- on login one chat line sums up your last session on that character
+  ("Last session: 2 boss kills, 1 delve, +1,234g."); switch it off in the
+  options
+
 ### Settings
 
 All settings are in **Options → AddOns → introVert** (or type `/iv options`):
@@ -182,6 +205,11 @@ commands share the same saved settings.
 Ideas for later live in [docs/IDEAS.md](docs/IDEAS.md).
 
 ## Changelog
+
+### 0.9.0 (2026-11-14): session journal
+
+16. Journal tab logging each session (boss kills, delves, chambers,
+    achievements, mount attempts, gold) with a login summary
 
 ### 0.8.0 (2026-11-13): dungeon mounts
 

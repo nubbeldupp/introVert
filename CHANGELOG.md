@@ -3,6 +3,17 @@
 All notable changes to introVert are listed here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.9.0] - 2026-11-14
+
+### Added
+- Session Journal: new Journal tab (`/iv journal`) showing what you did this session and in earlier ones
+- Logs raid and dungeon boss kills, delves, Labyrinth chambers, newly earned achievements, mount attempts and the gold you made or spent
+- A login starts a new session, a `/reload` continues it; the last 30 sessions are kept
+- One chat line on login sums up your last session ("Last session: 2 boss kills, 1 delve, +1,234g."); can be switched off in the options
+
+### Changed
+- The window is wider so seven tabs fit
+
 ## [0.8.0] - 2026-11-13
 
 ### Added
@@ -93,6 +104,7 @@ First public release.
 - Minimap button (left-click: window, right-click: options) and Addon Compartment entry
 - `/iv help` lists all commands
 
+[0.9.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.9.0
 [0.8.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.8.0
 [0.7.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.7.0
 [0.6.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.6.0
