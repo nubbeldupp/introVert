@@ -116,8 +116,10 @@ journal; the addon only stores item IDs.
   Invincible (1% drop: 11% of players would have it by now).").
 - **Drop luck**: once a mount has attempts, its row shows how unlucky you
   are, e.g. "1% drop: 33% of players would have it after 40 attempts".
-  Drop chances are rough community figures (1% unless set otherwise as
-  `dropChance` in `MountData.lua`); guaranteed drops show no luck line.
+  Drop chances come from the Rarity addon's database: 1% for most, Raven
+  Lord and Spawn of Horridon about 1.5%, Blue Proto-Drake 1.3%, Clutch of
+  Ji-Kun 2% (`dropChance` in `MountData.lua`); guaranteed drops show no
+  luck line.
 - Boss matching uses English encounter names, so attempt counting needs an
   English client. The missing-mounts list works in any language.
 - The data in `Modules/Raids/MountData.lua` is unverified for 12.1; run

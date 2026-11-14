@@ -163,6 +163,16 @@ describe("Raid mounts", function()
       end
     end)
 
+    it("uses the known rarer and more common drop chances", function()
+      local data = helper.loadPure({ "Modules/Raids/MountData.lua" }).RaidMountData
+
+      assert.equal("1.5% drop: 14% of players would have it after 10 attempts",
+        Mounts.luckText(10, Mounts.dropChanceOf(data, 32768)))
+      assert.equal("2% drop: 18% of players would have it after 10 attempts",
+        Mounts.luckText(10, Mounts.dropChanceOf(data, 95059)))
+      assert.equal(0.01, Mounts.dropChanceOf(data, 50818))
+    end)
+
     it("gives every curated mount a valid drop chance", function()
       local data = helper.loadPure({ "Modules/Raids/MountData.lua" }).RaidMountData
       for _, instance in ipairs(Mounts.allInstances(data)) do
