@@ -35,6 +35,7 @@ Random dungeons and LFR, without the noise.
 
 - **Lockouts across all your characters**: who is free for which raid this week
 - **Missing raid mounts** with boss, difficulty and **attempt counter**
+- **Drop luck**: "1% drop: 33% of players would have it after 40 attempts"
 - Shows which alts can still try for each mount
 
 ![Raids tab](SCREENSHOT_RAIDS)

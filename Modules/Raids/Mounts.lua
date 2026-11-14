@@ -11,6 +11,12 @@ local CLOSED_MARKER = "[+] "
 local OPEN_MARKER = "[-] "
 local HINT = "Click a mount to show or hide your characters."
 local NO_LOCKOUT = "no lockout, farm any time"
+local PERCENT = 100
+local MIN_SHOWN_PERCENT = 1
+local MAX_SHOWN_PERCENT = 99
+
+-- Used when a mount in MountData has no dropChance of its own.
+Mounts.DEFAULT_DROP_CHANCE = 0.01
 
 local function contains(list, value)
   for _, item in ipairs(list) do
@@ -41,6 +47,70 @@ function Mounts.allInstances(data)
   return list
 end
 
+-- The data entry for `itemID`, or nil when it is not tracked.
+local function findMount(data, itemID)
+  for _, instance in ipairs(Mounts.allInstances(data)) do
+    for _, mount in ipairs(instance.mounts) do
+      if mount.itemID == itemID then
+        return mount
+      end
+    end
+  end
+  return nil
+end
+
+-- Drop chance (0..1) of a tracked mount; DEFAULT_DROP_CHANCE when unknown.
+function Mounts.dropChanceOf(data, itemID)
+  local mount = findMount(data, itemID)
+  return (mount and mount.dropChance) or Mounts.DEFAULT_DROP_CHANCE
+end
+
+-- Chance that a player has the mount after `attempts` kills.
+function Mounts.luckChance(attempts, dropChance)
+  return 1 - (1 - dropChance) ^ attempts
+end
+
+-- "1.5%": one decimal, trailing ".0" dropped.
+local function formatRate(chance)
+  return ("%g%%"):format(math.floor(chance * PERCENT * 10 + 0.5) / 10)
+end
+
+-- "33%", or "<1%" / ">99%" at the edges so it never reads 0% or 100%.
+local function formatLuck(chance)
+  local percent = chance * PERCENT
+  if percent < MIN_SHOWN_PERCENT then
+    return "<" .. MIN_SHOWN_PERCENT .. "%"
+  end
+  if percent > MAX_SHOWN_PERCENT then
+    return ">" .. MAX_SHOWN_PERCENT .. "%"
+  end
+  return ("%d%%"):format(math.floor(percent + 0.5))
+end
+
+local function hasLuck(attempts, dropChance)
+  return attempts > 0 and dropChance < 1
+end
+
+-- "1% drop: 33% of players would have it after 40 attempts", or nil before
+-- the first attempt and for guaranteed drops.
+function Mounts.luckText(attempts, dropChance)
+  if not hasLuck(attempts, dropChance) then
+    return nil
+  end
+  return ("%s drop: %s of players would have it after %d %s"):format(
+    formatRate(dropChance), formatLuck(Mounts.luckChance(attempts, dropChance)),
+    attempts, attempts == 1 and "attempt" or "attempts")
+end
+
+-- "1% drop: 11% of players would have it by now", for the attempt message.
+function Mounts.luckNow(attempts, dropChance)
+  if not hasLuck(attempts, dropChance) then
+    return nil
+  end
+  return ("%s drop: %s of players would have it by now"):format(
+    formatRate(dropChance), formatLuck(Mounts.luckChance(attempts, dropChance)))
+end
+
 -- Resolves one group (raids or dungeons) into `result`; returns the
 -- instances that still have missing mounts.
 local function resolveGroup(instances, lookup, result)
@@ -58,7 +128,10 @@ local function resolveGroup(instances, lookup, result)
         if info.collected then
           result.collected = result.collected + 1
         else
-          missing[#missing + 1] = { itemID = mount.itemID, mountName = info.name, boss = mount.boss, note = mount.note }
+          missing[#missing + 1] = {
+            itemID = mount.itemID, mountName = info.name, boss = mount.boss, note = mount.note,
+            dropChance = mount.dropChance or Mounts.DEFAULT_DROP_CHANCE,
+          }
         end
       end
     end
@@ -195,6 +268,13 @@ local function mountTitle(mount, count)
   return ("%s - %s%s, %d %s"):format(mount.mountName, mount.boss, note, count, unit)
 end
 
+local function appendLuck(lines, mount, count)
+  local luck = Mounts.luckText(count, mount.dropChance)
+  if luck then
+    lines[#lines + 1] = INDENT .. luck
+  end
+end
+
 local function plainLink(_, text)
   return text
 end
@@ -216,6 +296,7 @@ local function appendRaidMount(lines, raid, mount, context)
   local count = context.attempts[mount.itemID] or 0
   lines[#lines + 1] = context.link(key, marker .. mountTitle(mount, count))
   lines[#lines + 1] = ("%s%s: %s"):format(INDENT, raid.name, summary(statuses))
+  appendLuck(lines, mount, count)
   if isOpen then
     for _, status in ipairs(statuses) do
       lines[#lines + 1] = characterLine(status, context)
@@ -228,6 +309,7 @@ local function appendDungeonMount(lines, dungeon, mount, context)
   local count = context.attempts[mount.itemID] or 0
   lines[#lines + 1] = mountTitle(mount, count)
   lines[#lines + 1] = ("%s%s: %s"):format(INDENT, dungeon.name, NO_LOCKOUT)
+  appendLuck(lines, mount, count)
 end
 
 -- A section header, then each missing mount separated by an empty line.

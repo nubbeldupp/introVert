@@ -10,6 +10,8 @@
 -- minutes: rough solo clear time to the mount boss (guess; used by Finder).
 -- itemID: the mount item; the game resolves name and collected state.
 -- boss: encounter name as sent by ENCOUNTER_END (English client).
+-- dropChance: optional drop chance 0..1 (default 1%, Mounts.DEFAULT_DROP_CHANCE);
+--   rough community figures, only used for the "drop luck" line.
 -- difficulties: optional list of difficulty IDs that can drop it
 --   (raids: 3 = 10N, 4 = 25N, 5 = 10H, 6 = 25H, 16 = Mythic;
 --    dungeons: 1 = Normal, 2 = Heroic).
@@ -45,8 +47,8 @@ ns.RaidMountData = {
     {
       instanceID = 615, name = "The Obsidian Sanctum", minutes = 3,
       mounts = {
-        { itemID = 43986, boss = "Sartharion", difficulties = { LEGACY_10_NORMAL }, note = "3 drakes up" },
-        { itemID = 43954, boss = "Sartharion", difficulties = { LEGACY_25_NORMAL }, note = "3 drakes up" },
+        { itemID = 43986, boss = "Sartharion", difficulties = { LEGACY_10_NORMAL }, note = "3 drakes up", dropChance = 1 },
+        { itemID = 43954, boss = "Sartharion", difficulties = { LEGACY_25_NORMAL }, note = "3 drakes up", dropChance = 1 },
       },
     },
     {

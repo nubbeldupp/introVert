@@ -5,8 +5,7 @@ Ideas parked for later. Built ones move to the README.
 ## Next up (in order)
 
 1. ~~**Auto-away reply**~~: built, see README "Away reply".
-2. **Drop-luck stats**: drop rates in `MountData`, "attempt 40 at 1%: 33%
-   chance you'd have it by now".
+2. ~~**Drop-luck stats**~~: built, see README "Drop luck".
 3. **Weekly reset digest**: one chat line on the first login after the
    reset (vault rewards waiting on N alts, lockouts cleared).
 4. **Which alt next?**: rank characters by open work (free lockouts with

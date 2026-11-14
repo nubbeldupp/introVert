@@ -3,6 +3,13 @@
 All notable changes to introVert are listed here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.11.0] - 2026-11-14
+
+### Added
+- Drop luck in the Mounts tab: once a mount has attempts, a line like "1% drop: 33% of players would have it after 40 attempts"
+- The attempt message in chat shows the same: "Attempt 12 for Invincible (1% drop: 11% of players would have it by now)."
+- Mounts can carry their own `dropChance` in `MountData.lua` (default 1%); the Obsidian Sanctum drakes are guaranteed and show no luck line
+
 ## [0.10.0] - 2026-11-14
 
 ### Added
@@ -115,6 +122,7 @@ First public release.
 - Minimap button (left-click: window, right-click: options) and Addon Compartment entry
 - `/iv help` lists all commands
 
+[0.11.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.11.0
 [0.10.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.10.0
 [0.9.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.9.0
 [0.8.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.8.0

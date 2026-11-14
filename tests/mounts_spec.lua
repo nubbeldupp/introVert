@@ -59,7 +59,7 @@ describe("Raid mounts", function()
       assert.equal(1, #result.raids)
       assert.equal("Icecrown Citadel", result.raids[1].name)
       assert.same({
-        { itemID = 50818, mountName = "Invincible", boss = "The Lich King", note = "25 Heroic" },
+        { itemID = 50818, mountName = "Invincible", boss = "The Lich King", note = "25 Heroic", dropChance = 0.01 },
       }, result.raids[1].missing)
     end)
 
@@ -116,6 +116,61 @@ describe("Raid mounts", function()
   describe("match", function()
     it("finds dungeon mounts by name too", function()
       assert.same({ { itemID = 13335, name = "Deathcharger" } }, Mounts.match(DUNGEON_DATA, lookup, "death"))
+    end)
+  end)
+
+  describe("drop luck", function()
+    it("is the chance to have the mount after n attempts", function()
+      assert.near(0.3310, Mounts.luckChance(40, 0.01), 0.0001)
+      assert.equal(0, Mounts.luckChance(0, 0.01))
+    end)
+
+    it("uses the mount's drop chance or 1%", function()
+      local data = { raids = { { instanceID = 1, name = "R", mounts = {
+        { itemID = 1, boss = "A", dropChance = 0.05 },
+        { itemID = 2, boss = "B" },
+      } } } }
+
+      assert.equal(0.05, Mounts.dropChanceOf(data, 1))
+      assert.equal(Mounts.DEFAULT_DROP_CHANCE, Mounts.dropChanceOf(data, 2))
+      assert.equal(Mounts.DEFAULT_DROP_CHANCE, Mounts.dropChanceOf(data, 999))
+    end)
+
+    it("describes the luck after some attempts", function()
+      assert.equal("1% drop: 33% of players would have it after 40 attempts", Mounts.luckText(40, 0.01))
+      assert.equal("1.5% drop: 2% of players would have it after 1 attempt", Mounts.luckText(1, 0.015))
+    end)
+
+    it("clamps tiny and near-certain chances", function()
+      assert.equal("0.1% drop: <1% of players would have it after 1 attempt", Mounts.luckText(1, 0.001))
+      assert.equal("1% drop: >99% of players would have it after 500 attempts", Mounts.luckText(500, 0.01))
+    end)
+
+    it("says nothing before the first attempt or for guaranteed drops", function()
+      assert.is_nil(Mounts.luckText(0, 0.01))
+      assert.is_nil(Mounts.luckText(3, 1))
+    end)
+
+    it("shows no luck line for guaranteed drops", function()
+      local data = { raids = { { instanceID = 615, name = "The Obsidian Sanctum", mounts = {
+        { itemID = 50818, boss = "Sartharion", dropChance = 1 },
+      } } } }
+
+      local lines = Mounts.lines(Mounts.resolve(data, lookup), { [50818] = 2 }, {}, NOW)
+
+      for _, line in ipairs(lines) do
+        assert.is_nil(line:find("drop:", 1, true))
+      end
+    end)
+
+    it("gives every curated mount a valid drop chance", function()
+      local data = helper.loadPure({ "Modules/Raids/MountData.lua" }).RaidMountData
+      for _, instance in ipairs(Mounts.allInstances(data)) do
+        for _, mount in ipairs(instance.mounts) do
+          local chance = Mounts.dropChanceOf(data, mount.itemID)
+          assert.is_true(chance > 0 and chance <= 1, tostring(mount.itemID))
+        end
+      end
     end)
   end)
 
@@ -203,6 +258,7 @@ describe("Raid mounts", function()
         "Raid mounts",
         "<50818>[+] Invincible - The Lich King (25 Heroic), 12 attempts",
         "  Icecrown Citadel: free on all 2 characters",
+        "  1% drop: 11% of players would have it after 12 attempts",
         "",
         "Collected 1 of 2 tracked mounts.",
       }, lines)
@@ -218,6 +274,7 @@ describe("Raid mounts", function()
         "Dungeon mounts",
         "Deathcharger - Lord Aurius Rivendare, 3 attempts",
         "  Stratholme: no lockout, farm any time",
+        "  1% drop: 3% of players would have it after 3 attempts",
         "",
         "Collected 1 of 2 tracked mounts.",
       }, lines)

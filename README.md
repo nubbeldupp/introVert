@@ -2,7 +2,7 @@
 
 World of Warcraft (Retail) addon for players who prefer to play alone.
 
-**Current version: 0.10.0** · [Changelog](#changelog) · MIT License
+**Current version: 0.11.0** · [Changelog](#changelog) · MIT License
 
 ## Modules
 
@@ -112,7 +112,12 @@ journal; the addon only stores item IDs.
   click again to close it. Names are shown in class colours; characters on
   your current realm are shown without the realm name.
 - An attempt is counted when you kill the dropping boss on an eligible
-  difficulty while the mount is still uncollected ("Attempt 12 for Invincible.").
+  difficulty while the mount is still uncollected ("Attempt 12 for
+  Invincible (1% drop: 11% of players would have it by now).").
+- **Drop luck**: once a mount has attempts, its row shows how unlucky you
+  are, e.g. "1% drop: 33% of players would have it after 40 attempts".
+  Drop chances are rough community figures (1% unless set otherwise as
+  `dropChance` in `MountData.lua`); guaranteed drops show no luck line.
 - Boss matching uses English encounter names, so attempt counting needs an
   English client. The missing-mounts list works in any language.
 - The data in `Modules/Raids/MountData.lua` is unverified for 12.1; run
@@ -219,6 +224,11 @@ commands share the same saved settings.
 Ideas for later live in [docs/IDEAS.md](docs/IDEAS.md).
 
 ## Changelog
+
+### 0.11.0 (2026-11-14): drop luck
+
+18. Drop luck: how many players would have a mount after your number of
+    attempts, in the Mounts tab and the attempt message
 
 ### 0.10.0 (2026-11-14): away reply
 

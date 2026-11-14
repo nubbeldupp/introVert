@@ -61,7 +61,8 @@ local function countAttempt(itemID)
   end
   local count = (attempts()[itemID] or 0) + 1
   ns.UpdateSetting({ "attempts", itemID }, count)
-  ns.Print(("Attempt %d for %s."):format(count, mount.name))
+  local luck = Mounts.luckNow(count, Mounts.dropChanceOf(ns.RaidMountData, itemID))
+  ns.Print(("Attempt %d for %s%s."):format(count, mount.name, luck and (" (" .. luck .. ")") or ""))
   ns.Publish("MountAttempt", mount.name, count)
 end
 

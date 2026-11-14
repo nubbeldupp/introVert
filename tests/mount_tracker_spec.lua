@@ -54,7 +54,7 @@ describe("Mount tracker", function()
       env.fire("ENCOUNTER_END", 1, "The Lich King", 6, 25, 1)
 
       assert.equal(1, IntroVertDB.attempts[50818])
-      assert.is_true(env.printed("Attempt 1 for Invincible"))
+      assert.is_true(env.printed("Attempt 1 for Invincible (1% drop: 1% of players would have it by now)."))
     end)
 
     it("keeps counting across kills", function()
