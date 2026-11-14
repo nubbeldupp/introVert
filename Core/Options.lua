@@ -117,7 +117,7 @@ local function editBoxOf(popup)
 end
 
 local function saveList(popup, data)
-  ns.UpdateSetting(data.path, ns.Lists.parse(editBoxOf(popup):GetText()))
+  ns.UpdateSetting(data.path, ns.Lists.parse(editBoxOf(popup):GetText(), data.separator))
 end
 
 local function ensureListPopup()
@@ -135,7 +135,7 @@ local function ensureListPopup()
     hideOnEscape = true,
     OnShow = function(popup, data)
       local editBox = editBoxOf(popup)
-      editBox:SetText(ns.Lists.format(ns.Defaults.get(ns.db, data.path)))
+      editBox:SetText(ns.Lists.format(ns.Defaults.get(ns.db, data.path), data.separator))
       editBox:HighlightText()
     end,
     OnAccept = saveList,
@@ -150,10 +150,11 @@ local function ensureListPopup()
   }
 end
 
--- Opens a popup to edit the string list stored at `path` as comma text.
-function Options.EditList(path, prompt)
+-- Opens a popup to edit the string list stored at `path` as separated text
+-- (separator: ns.Lists.WORDS by default, ns.Lists.SENTENCES for phrases).
+function Options.EditList(path, prompt, separator)
   ensureListPopup()
-  StaticPopup_Show(LIST_POPUP, prompt, nil, { path = path })
+  StaticPopup_Show(LIST_POPUP, prompt, nil, { path = path, separator = separator })
 end
 
 ns.On("ADDON_LOADED", function(_, loadedName)

@@ -7,6 +7,8 @@ local CORE_HELP = { "/iv help - show this list" }
 
 ns.name = addonName
 ns.modules = {}
+-- Registration (TOC) order, so modules start and react to events in a fixed order.
+local moduleOrder = {}
 
 local eventFrame = CreateFrame("Frame")
 local handlers = {}
@@ -97,6 +99,9 @@ function ns.UpdateSetting(path, value)
 end
 
 function ns.RegisterModule(name, module)
+  if not ns.modules[name] then
+    moduleOrder[#moduleOrder + 1] = name
+  end
   ns.modules[name] = module
 end
 
@@ -152,7 +157,8 @@ ns.On("ADDON_LOADED", function(_, loadedName)
     return
   end
   ns.SetSettings(ns.Defaults.merge(ns.Defaults.values, IntroVertDB))
-  for _, module in pairs(ns.modules) do
+  for _, name in ipairs(moduleOrder) do
+    local module = ns.modules[name]
     if module.OnInit then
       module.OnInit()
     end

@@ -9,7 +9,7 @@ local LOG_LIMIT = 100
 local LOG_PRINT_COUNT = 20
 local SPAM_EVENTS = { "CHAT_MSG_CHANNEL", "CHAT_MSG_WHISPER", "CHAT_MSG_SAY", "CHAT_MSG_YELL" }
 local SWITCHES = { "guildInvites", "duels", "petDuels", "groupInvites", "spam" }
-local REPLIES_PROMPT = "One of these is whispered when you decline (comma separated):"
+local REPLIES_PROMPT = "One of these is whispered when you decline (separate with ;):"
 local HELP_LINES = {
   "/iv dnd - what Do Not Disturb declined and hid this session",
   "/iv dnd log - the last 20 declined invites and hidden messages",
@@ -169,7 +169,7 @@ ns.Options.AddSection(function(ui)
     "Hides recruitment in General, Trade, Services, say/yell and whispers (English and German).")
   ui.checkbox(shield("reply"), "Send a polite reply", "Whisper one of your polite replies when declining.")
   ui.button("Polite replies", "Edit", function()
-    ns.Options.EditList(shield("replies"), REPLIES_PROMPT)
+    ns.Options.EditList(shield("replies"), REPLIES_PROMPT, ns.Lists.SENTENCES)
   end, REPLIES_PROMPT)
 end)
 

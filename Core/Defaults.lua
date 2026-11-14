@@ -53,6 +53,8 @@ Defaults.values = {
     spam = true,
     reply = false,
     replies = { "Thanks, but I play solo!" },
+    awayReply = false,
+    awayReplies = { "Away for a bit, I'll answer when I'm back!" },
   },
 }
 

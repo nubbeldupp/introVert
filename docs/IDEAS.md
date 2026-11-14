@@ -2,10 +2,25 @@
 
 Ideas parked for later. Built ones move to the README.
 
+## Next up (in order)
+
+1. ~~**Auto-away reply**~~: built, see README "Away reply".
+2. **Drop-luck stats**: drop rates in `MountData`, "attempt 40 at 1%: 33%
+   chance you'd have it by now".
+3. **Weekly reset digest**: one chat line on the first login after the
+   reset (vault rewards waiting on N alts, lockouts cleared).
+4. **Which alt next?**: rank characters by open work (free lockouts with
+   missing mounts, empty vault slots, rewards waiting).
+5. **Gentle break reminder**: one quiet line after N hours of play.
+6. **Delve keys and shards per alt** in the Alts tab (`C_CurrencyInfo`).
+
 ## Social shields
 
 - **Whisper inbox**: whispers land silently in an "Inbox" window tab (no
   sound, no flashing chat tab); read and reply when you feel like it.
+- **Decline trades from strangers** (`TRADE_SHOW`, friends get through).
+- **Mute NPC talking heads** outside quests and cutscenes.
+- **Transmog farm list**: unlearned appearances per legacy raid.
 - **Calm cities**: in capital cities hide other players' nameplates and pets,
   restore your settings when you leave.
 

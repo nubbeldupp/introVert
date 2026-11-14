@@ -26,6 +26,7 @@ Random dungeons and LFR, without the noise.
 - Auto-decline **guild invites**, **duels**, **pet battle duels** and **group invites** (friends still get through)
 - **Recruitment spam filter** for channels, whispers, say and yell (English and German)
 - Optional polite whisper reply: *"Thanks, but I play solo!"*
+- **Away reply**: while you are AFK, everyone who whispers gets one friendly reply, and you see who whispered when you are back
 - See what was blocked: `/iv dnd log`
 
 ![Do Not Disturb log](SCREENSHOT_DND)

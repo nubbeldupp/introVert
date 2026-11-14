@@ -2,7 +2,7 @@
 
 World of Warcraft (Retail) addon for players who prefer to play alone.
 
-**Current version: 0.9.0** · [Changelog](#changelog) · MIT License
+**Current version: 0.10.0** · [Changelog](#changelog) · MIT License
 
 ## Modules
 
@@ -38,6 +38,19 @@ Services, say/yell and whispers, in English and German ("recruit",
 /iv dnd log         the last 20 entries
 /iv dnd on|off      all shields at once
 ```
+
+### Away reply
+
+While the game flags you as AFK (after a few idle minutes, or `/afk`),
+introVert keeps track of who whispers you. When you are back, one chat line
+lists them: "While you were away (20m): 2 whispers from Anna, Friend."
+
+Optional (off by default): everyone who whispers gets **one** friendly reply
+per away period, e.g. "Away for a bit, I'll answer when I'm back!". Works for
+character and Battle.net whispers; Game Masters and recruitment spam are
+skipped. Switch it on and edit the replies under Options → AddOns →
+introVert → Away. The game also sends its own short AFK notice; introVert's
+reply comes on top, once per person.
 
 ### Minimap button
 
@@ -187,7 +200,8 @@ Earlier sessions
 All settings are in **Options → AddOns → introVert** (or type `/iv options`):
 toggles per profile, chat level dropdowns, boss-fight and wipe muting,
 greet / goodbye / alarm switches, and **Edit** buttons for the keyword,
-greeting and goodbye lists (comma separated). The panel and the slash
+greeting and goodbye lists (keywords separated by commas, greetings,
+goodbyes and replies by semicolons so a line can contain a comma). The panel and the slash
 commands share the same saved settings.
 
 ### Commands
@@ -205,6 +219,11 @@ commands share the same saved settings.
 Ideas for later live in [docs/IDEAS.md](docs/IDEAS.md).
 
 ## Changelog
+
+### 0.10.0 (2026-11-14): away reply
+
+17. Away reply: one friendly reply per person while you are AFK, and a
+    summary of who whispered when you are back
 
 ### 0.9.0 (2026-11-14): session journal
 

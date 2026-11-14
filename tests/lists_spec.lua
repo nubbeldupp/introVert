@@ -73,4 +73,18 @@ describe("Lists", function()
       assert.same(list, Lists.parse(Lists.format(list)))
     end)
   end)
+
+  describe("sentence lists", function()
+    it("split on semicolons and keep commas inside a sentence", function()
+      assert.same({ "Away for a bit, back soon!", "brb" },
+        Lists.parse("Away for a bit, back soon! ; brb", Lists.SENTENCES))
+    end)
+
+    it("join with semicolon and space and round-trip", function()
+      local list = { "Thanks, but I play solo!", "hey" }
+
+      assert.equal("Thanks, but I play solo!; hey", Lists.format(list, Lists.SENTENCES))
+      assert.same(list, Lists.parse(Lists.format(list, Lists.SENTENCES), Lists.SENTENCES))
+    end)
+  end)
 end)

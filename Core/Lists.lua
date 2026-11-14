@@ -1,20 +1,23 @@
--- Converts between editable comma-separated text and string lists. Pure.
+-- Converts between editable separated text and string lists. Pure.
 local _, ns = ...
 
 local Lists = {}
 
-local SEPARATOR = ", "
+-- Word lists (keywords) are split on commas; sentence lists (greetings,
+-- replies) on semicolons, so a sentence can contain a comma.
+Lists.WORDS = ","
+Lists.SENTENCES = ";"
 
 -- Chat messages longer than 255 bytes fail to send.
 Lists.MAX_ENTRY_LENGTH = 255
 Lists.MAX_ENTRIES = 20
 
--- Splits on commas, trims each entry, drops blanks and case-insensitive
--- duplicates (first spelling wins), and applies the size limits.
--- Always returns a new list.
-function Lists.parse(text)
+-- Splits on `separator` (default Lists.WORDS), trims each entry, drops
+-- blanks and case-insensitive duplicates (first spelling wins), and applies
+-- the size limits. Always returns a new list.
+function Lists.parse(text, separator)
   local result, seen = {}, {}
-  for part in (text or ""):gmatch("[^,]+") do
+  for part in (text or ""):gmatch("[^" .. (separator or Lists.WORDS) .. "]+") do
     if #result >= Lists.MAX_ENTRIES then
       break
     end
@@ -28,8 +31,8 @@ function Lists.parse(text)
   return result
 end
 
-function Lists.format(list)
-  return table.concat(list or {}, SEPARATOR)
+function Lists.format(list, separator)
+  return table.concat(list or {}, (separator or Lists.WORDS) .. " ")
 end
 
 -- Returns a new list with `item` appended, keeping at most `limit` entries

@@ -14,8 +14,8 @@ local WIPE_MUTE_RANGE = { min = 0, max = 120, step = 5 }
 
 local LIST_EDITORS = {
   { label = "Keywords", key = "keywords", prompt = "Lines containing any of these words always show (comma separated):" },
-  { label = "Greetings", key = "greetings", prompt = "One of these is said when a new group forms (comma separated):" },
-  { label = "Goodbyes", key = "farewells", prompt = "One of these is said when the run is completed (comma separated):" },
+  { label = "Greetings", key = "greetings", prompt = "One of these is said when a new group forms (separate with ;):", separator = ns.Lists.SENTENCES },
+  { label = "Goodbyes", key = "farewells", prompt = "One of these is said when the run is completed (separate with ;):", separator = ns.Lists.SENTENCES },
 }
 
 local function quiet(...)
@@ -45,7 +45,7 @@ end
 local function addListEditors(ui)
   for _, editor in ipairs(LIST_EDITORS) do
     ui.button(editor.label, "Edit", function()
-      ns.Options.EditList(quiet(editor.key), editor.prompt)
+      ns.Options.EditList(quiet(editor.key), editor.prompt, editor.separator)
     end, editor.prompt)
   end
 end

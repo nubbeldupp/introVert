@@ -166,9 +166,25 @@ describe("Options panel", function()
     it("saves the edited list on accept", function()
       button("Greetings").onClick()
 
-      env.acceptPopup("hello, o/ , hello")
+      env.acceptPopup("hello; o/ ; hello")
 
       assert.same({ "hello", "o/" }, IntroVertDB.quiet.greetings)
+    end)
+
+    it("keeps commas inside a greeting", function()
+      button("Greetings").onClick()
+
+      env.acceptPopup("hi all, have fun; o/")
+
+      assert.same({ "hi all, have fun", "o/" }, IntroVertDB.quiet.greetings)
+    end)
+
+    it("still splits keywords on commas", function()
+      button("Keywords").onClick()
+
+      env.acceptPopup("loot, wait")
+
+      assert.same({ "loot", "wait" }, IntroVertDB.quiet.keywords)
     end)
 
     it("saves on Enter too", function()

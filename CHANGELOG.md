@@ -3,6 +3,17 @@
 All notable changes to introVert are listed here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.10.0] - 2026-11-14
+
+### Added
+- Away reply: while you are AFK, everyone who whispers (character or Battle.net) can get one friendly reply per away period; off by default, replies editable in the options
+- Coming back from AFK prints who whispered: "While you were away (20m): 2 whispers from Anna, Friend."
+- Game Masters and recruitment spam get no away reply
+
+### Fixed
+- Greetings, goodbyes and replies are now separated with `;` in the edit box, so a single message can contain a comma ("Thanks, but I play solo!" was split in two). Keywords still use commas
+- Modules now start in a fixed order, so journal entries for the same event (boss kill and mount attempt) always appear in the same order
+
 ## [0.9.0] - 2026-11-14
 
 ### Added
@@ -104,6 +115,7 @@ First public release.
 - Minimap button (left-click: window, right-click: options) and Addon Compartment entry
 - `/iv help` lists all commands
 
+[0.10.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.10.0
 [0.9.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.9.0
 [0.8.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.8.0
 [0.7.0]: https://github.com/nubbeldupp/introVert/releases/tag/v0.7.0

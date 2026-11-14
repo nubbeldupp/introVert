@@ -20,6 +20,17 @@ describe("Core", function()
     assert.equal(IntroVertDB, ns.db)
   end)
 
+  it("starts modules in the order they registered", function()
+    local started = {}
+    for _, name in ipairs({ "zeta", "alpha", "mid" }) do
+      ns.RegisterModule(name, { OnInit = function() started[#started + 1] = name end })
+    end
+
+    env.fire("ADDON_LOADED", "IntroVert")
+
+    assert.same({ "zeta", "alpha", "mid" }, started)
+  end)
+
   it("keeps previously saved settings", function()
     -- busted sandboxes spec globals; the addon reads the real _G.
     _G.IntroVertDB = { quiet = { greet = false } }

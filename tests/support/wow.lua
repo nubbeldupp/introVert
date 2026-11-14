@@ -27,6 +27,7 @@ local STUBBED_GLOBALS = {
   "IntroVert_OnAddonCompartmentClick", "IntroVert_OnAddonCompartmentEnter",
   "IntroVert_OnAddonCompartmentLeave", "Minimap", "GetCursorPosition",
   "UnitRace", "UnitClass", "RAID_CLASS_COLORS", "LOCALIZED_CLASS_NAMES_MALE",
+  "UnitIsAFK", "BNSendWhisper",
 }
 
 -- Unknown UI methods (SetBackdrop, SetMovable, ...) are accepted and ignored.
@@ -49,7 +50,7 @@ local function newEnv()
     timers = {}, filters = {}, errors = {}, buttons = {}, flashes = 0, leaves = 0,
     instance = { inInstance = false, instanceType = "none", difficultyID = 0 },
     isLFG = false, playerName = "Nubbel", role = "DAMAGER", now = 100,
-    secret = false, inCombat = false,
+    secret = false, inCombat = false, afk = false, sendFails = false, bnSent = {},
     realm = "Silvermoon", time = 1000000, savedInstances = {}, raidInfoRequests = 0,
     mounts = {}, uncachedItems = {}, itemLoadRequests = {},
     vault = {}, zones = {}, delvePois = {},
@@ -207,9 +208,12 @@ local function installGame(env)
   _G.issecretvalue = function() return env.secret end
   _G.C_ChatInfo = {
     SendChatMessage = function(text, channel, _, target)
+      assert(not env.sendFails, "sending blocked")
       env.sent[#env.sent + 1] = { text = text, channel = channel, target = target }
     end,
   }
+  _G.UnitIsAFK = function() return env.afk end
+  _G.BNSendWhisper = function(id, text) env.bnSent[#env.bnSent + 1] = { id = id, text = text } end
   local function countDecline(kind)
     return function() env.declines[kind] = (env.declines[kind] or 0) + 1 end
   end
