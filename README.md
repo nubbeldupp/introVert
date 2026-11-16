@@ -227,7 +227,7 @@ Ideas for later live in [docs/IDEAS.md](docs/IDEAS.md).
 
 ## Changelog
 
-### 0.11.0 (2026-11-14): drop luck
+### 0.11.0 (2026-11-16): drop luck
 
 18. Drop luck: how many players would have a mount after your number of
     attempts, in the Mounts tab and the attempt message

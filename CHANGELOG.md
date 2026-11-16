@@ -3,7 +3,7 @@
 All notable changes to introVert are listed here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [Semantic Versioning](https://semver.org/).
 
-## [0.11.0] - 2026-11-14
+## [0.11.0] - 2026-11-16
 
 ### Added
 - Drop luck in the Mounts tab: once a mount has attempts, a line like "1% drop: 33% of players would have it after 40 attempts"
